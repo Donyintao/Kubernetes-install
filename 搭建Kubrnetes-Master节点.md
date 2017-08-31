@@ -162,7 +162,7 @@ KUBE_CONTROLLER_MANAGER_ARGS=--address=127.0.0.1 \
                              --kubeconfig=/etc/kubernetes/kube-controller-manager.kubeconfig
 ```
 
-创建kube-controller-manager TLS证配置文件
+创建kube-controller-manager TLS认证配置文件
 
 ``` bash
 # vim /etc/kubernetes/kube-controller-manager.kubeconfig
@@ -291,7 +291,7 @@ WantedBy=multi-user.target
 # systemctl daemon-reload
 # systemctl enable kube-scheduler && systemctl start kube-scheduler && systemctl status kube-scheduler
 ```
-# 验证master节点状态
+# 验证Kubernetes Master节点状态
 
 ``` bash
 # kubectl get cs
