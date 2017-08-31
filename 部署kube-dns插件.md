@@ -87,3 +87,20 @@ service "kube-dns" created
 NAME                        READY     STATUS    RESTARTS   AGE
 kube-dns-3587985970-n1fc3   3/3       Running   0          1h
 ```
+## 验证kube-dns插件功能
+
+检查`my-nginx-svc`的`IP`地址信息
+
+``` bash
+# kubectl get svc|grep nginx    
+my-nginx-svc           10.254.185.145   <nodes>       80:30080/TCP   9d
+```
+
+通过另一个`pod`服务检查是否能够解析到`my-nginx-svc`服务，解析结果显示`10.254.185.145`说明kube-dns服务正常。
+
+``` bash
+# kubectl exec my-nginx-1201858851-11vnw -- ping -c 2 my-nginx-svc
+PING my-nginx-svc.default.svc.cluster.local (10.254.185.145): 48 data bytes
+--- my-nginx-svc.default.svc.cluster.local ping statistics ---
+2 packets transmitted, 0 packets received, 100% packet loss
+```
