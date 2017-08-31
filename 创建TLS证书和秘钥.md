@@ -339,7 +339,7 @@ aDz1i4/WZhJSUQyDfx7HzJpAmBE=
 ```
 ## 分发证书
 
-将kubernetes证书拷贝到安装目录
+将`TLS`证书拷贝到`Kubernetes Master`和`Kubernetes node`的配置目录
 
 ``` bash
 # mkdir -p /etc/kubernetes/ssl && cp /tmp/ssl/*.pem /etc/kubernetes/ssl
