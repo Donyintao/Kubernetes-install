@@ -138,3 +138,167 @@ WantedBy=multi-user.target
 # systemctl daemon-reload
 # systemctl enable kube-apiserver && systemctl start kube-apiserver && systemctl status kube-apiserver
 ```
+
+## 配置和启动kube-controller-manager服务
+
+创建kube-controller-manager配置文件
+
+``` bash
+# vim /etc/kubernetes/kube-controller-manager
+###
+# The following values are used to configure the kubernetes controller-manager
+ 
+# defaults from config and apiserver should be adequate
+ 
+# Add your own!
+KUBE_CONTROLLER_MANAGER_ARGS=--address=127.0.0.1 \
+                             --leader-elect=true \
+                             --cluster-name=kubernetes \
+                             --use-service-account-credentials=true \
+                             --root-ca-file=/etc/kubernetes/ssl/ca.pem \
+                             --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem \
+                             --cluster-signing-key-file=/etc/kubernetes/ssl/ca-key.pem \
+                             --service-account-private-key-file=/etc/kubernetes/ssl/ca-key.pem \
+                             --kubeconfig=/etc/kubernetes/kube-controller-manager.kubeconfig
+```
+
+创建kube-controller-manager TLS证配置文件
+
+``` bash
+# vim /etc/kubernetes/kube-controller-manager.kubeconfig
+apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    certificate-authority: /etc/kubernetes/ssl/ca.pem
+    server: https://192.168.100.110:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: system:kube-controller-manager
+  name: kube-context
+current-context: kube-context
+users:
+- name: system:kube-controller-manager
+  user:
+    client-certificate: /etc/kubernetes/ssl/kube-controller-manager.pem
+    client-key: /etc/kubernetes/ssl/kube-controller-manager-key.pem
+```
+
+创建kube-controller-manager启动脚本
+
+``` bash
+# vim /usr/lib/systemd/system/kube-controller-manager.service
+[Unit]
+Description=Kube-controller-manager Service
+After=network.target
+ 
+[Service]
+EnvironmentFile=-/etc/kubernetes/kube-config
+EnvironmentFile=-/etc/kubernetes/kube-controller-manager
+ExecStart=/usr/local/kubernetes/server/bin/kube-controller-manager \
+          $KUBE_LOGTOSTDERR \
+          $KUBE_LOG_LEVEL \
+          $KUBE_MASTER \
+          $KUBE_CONTROLLER_MANAGER_ARGS
+ 
+Restart=on-failure
+LimitNOFILE=65536
+ 
+[Install]
+WantedBy=multi-user.target
+```
+
+创建kube-controller-manager日志目录
+
+``` bash
+# mkdir /data/kubernetes/logs/kube-controller-manager -p
+# systemctl daemon-reload
+# systemctl enable kube-controller-manager && systemctl start kube-controller-manager && systemctl status kube-controller-manager
+```
+
+## 配置和启动kube-scheduler服务
+
+创建kube-scheduler配置文件
+
+``` bash
+# vim /etc/kubernetes/kube-scheduler
+###
+# kubernetes scheduler config
+ 
+# default config should be adequate
+ 
+# Add your own!
+KUBE_SCHEDULER_ARGS="--leader-elect=true \
+                     --address=127.0.0.1 \
+                     --log-dir=/data/kubernetes/logs/kube-scheduler \
+                     --kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig"
+```
+
+创建kube-scheduler TLS认证配置文件
+
+``` bash
+# vim /etc/kubernetes/kube-scheduler.kubeconfig
+apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    certificate-authority: /etc/kubernetes/ssl/ca.pem
+    server: https://192.168.3.99:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: system:kube-scheduler
+  name: kube-context
+current-context: kube-context
+users:
+- name: system:kube-scheduler
+  user:
+    client-certificate: /etc/kubernetes/ssl/kube-scheduler.pem
+    client-key: /etc/kubernetes/ssl/kube-scheduler-key.pem
+```
+
+创建kube-scheduler启动脚本
+
+``` bash
+# vim /usr/lib/systemd/system/kube-scheduler.service
+[Unit]
+Description=kube-scheduler Service
+After=network.target
+ 
+[Service]
+EnvironmentFile=-/etc/kubernetes/kube-config
+EnvironmentFile=-/etc/kubernetes/kube-scheduler
+ExecStart=/usr/local/kubernetes/bin/kube-scheduler \
+            $KUBE_LOGTOSTDERR \
+            $KUBE_LOG_LEVEL \
+            $KUBE_MASTER \
+            $KUBE_SCHEDULER_ARGS
+ 
+Restart=on-failure
+LimitNOFILE=65536
+ 
+[Install]
+WantedBy=multi-user.target
+```
+
+创建kube-scheduler日志目录
+
+``` bash
+# mkdir /data/kubernetes/logs/kube-scheduler -p
+# systemctl daemon-reload
+# systemctl enable kube-scheduler && systemctl start kube-scheduler && systemctl status kube-scheduler
+```
+# 验证master节点状态
+
+``` bash
+# kubectl get cs
+NAME                 STATUS    MESSAGE              ERROR
+controller-manager   Healthy   ok                   
+scheduler            Healthy   ok                   
+etcd-0               Healthy   {"health": "true"}   
+etcd-1               Healthy   {"health": "true"}   
+etcd-2               Healthy   {"health": "true"}   
+```
