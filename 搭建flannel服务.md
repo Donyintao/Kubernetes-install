@@ -7,4 +7,4 @@
 `flannel`为全部的容器使用一个`network`，然后在每个`host`上从`network`中划分一个子网`subnet`。`host`上的容器创建网络时，从`subnet`中划分一个ip给容器。`flannel`不存在所谓的控制节点，而是每个`host`上的`flanneld`从一个etcd中获取相关数据，然后声明自己的子网网段，并记录在etcd中。如果有`host`对数据转发时，从`etcd`中查询到该子网所在的`host`的`ip`，然后将数据发往对应`host`上的`flanneld`，交由其进行转发。
 
 ## Flannel架构介绍
-![](file:///usr/local/src/tmp/init/Kubernetes-install/flannel.png)
+![flannel](file:///usr/local/src/tmp/init/Kubernetes-install/flannel.png)
