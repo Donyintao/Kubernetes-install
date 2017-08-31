@@ -88,7 +88,7 @@ WantedBy=multi-user.target
 ```
 ## 验证docker服务获取IP是否正常
 
-注意：`yum`方式安装，docker和flannel无需做任何配置的；如果没有正确获取IP，请见flannel服务是否正常启动。
+注意：`yum`方式安装flannel，docker无需做任何配置的；如果docker服务没有正确获取IP，请检查flannel服务是否正常启动。
 
 ``` bash
 # ifconfig docker0
