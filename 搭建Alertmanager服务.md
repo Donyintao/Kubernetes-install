@@ -37,9 +37,15 @@ alertmanager   alert.host.com        192.168.3.99   80        9d
 这时通过浏览器访问`http://alert.host.com `来访问`Alertmanager`的界面，查看的页面查看`FILTER`是空的，这是因为Prometheus还没有和Alertmanager建立联系。
 ![Alertmanager](./images/alertmanager.jpg)
 
-## 创建Prometheus rules文件
+## Prometheus rules配置
 
-``` bash
+设置警报和通知的主要步骤流程(其实就简单三步，但是写的话，总感觉很复杂的样子)：
++ 安装配置Alertmanager
++ 在Prometheus中创建告警规则
++ 配置Prometheus通过-alertmanager.url标志与Alertmanager通信
+
+使用ConfigMap方式，创建Prometheus rules文件。
+
 # vim prometheus-rules-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -79,6 +85,7 @@ data:
     ALERT Container_USAGE_CPU_Average
       IF ((sum(rate(container_cpu_usage_seconds_total{job="kubernetes-nodes",image!="",pod_name!=""}[1m])) BY (pod_name)) * 100) > 95
       FOR 1m
+      FOR 1m
       LABELS { severity = "CPU使用率: {{ $value }}" }
       ANNOTATIONS {
         summary = "检测CPU使用率过高.",
@@ -88,13 +95,6 @@ data:
 # kubectl apply -f prometheus-rules-configmap.yaml 
 configmap "prometheus-rules" created
 ```
-
-## Prometheus rules配置
-
-设置警报和通知的主要步骤流程(其实就简单三步，但是写的话，总感觉很复杂的样子)：
-+ 安装配置Alertmanager
-+ 在Prometheus中创建告警规则
-+ 配置Prometheus通过-alertmanager.url标志与Alertmanager通信
 
 修改`prometheus-configmap.yaml`文件，在`global`配置下增加两行内容：
 
@@ -122,7 +122,7 @@ containers:
     name: prometheus-rules       
 ```
 
-## 加载Prometheus配置
+## 重新加载Prometheus服务
 
 ``` bash
 # kubectl apply -f prometheus-configmap.yaml  -f prometheus-deployment.yaml                           
@@ -134,7 +134,7 @@ service "prometheus" configured
 ## 验证Prometheus报警规则
 
 这时通过浏览器访问`http://prometheus.host.com `来访问`Alert`的界面，会发现已经有新生成的报警规则；绿色表示：正常，红色表示：异常。
-![Prometheus-rules](./images/prome-alert.jpg)
+![Prometheus-rules](./images/prometheus-alert.jpg)
 
 再次通过浏览器访问`http://alert.host.com `来访问`Alertmanager`的界面，查看的页面查看`FILTER`已经有数据了，这是因为Prometheus已经和Alertmanager建立联系。
 ![alertmanager-info](./images/alertmanager-info.jpg)
