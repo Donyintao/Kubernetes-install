@@ -46,6 +46,7 @@ alertmanager   alert.host.com        192.168.3.99   80        9d
 
 使用ConfigMap方式，创建Prometheus rules文件。
 
+``` bash
 # vim prometheus-rules-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
