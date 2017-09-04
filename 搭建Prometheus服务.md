@@ -70,7 +70,8 @@ prometheus     prometheus.host.com   192.168.3.99   80        9d
 ## 总结
 
 通过向Kubernetes集群内部署Prometheus，我们在不修改任何集群配置的状态下，利用Prometheus 的服务发现功能获得了基本的集群监控能力，并通过web界面对监控系统获取到的数据做了基本的查询。
-后面我们将进一步完善Prometheus的使用：
+
+下面我们将进一步完善Prometheus的使用：
 + 增加更多的监控数据源
 + 使用Grafana图形化的展示搜集到的监控数据
 + 使用AlertManager实现异常提醒
