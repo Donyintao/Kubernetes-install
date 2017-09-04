@@ -22,7 +22,7 @@ Dashboard是Kubernetes的一个插件，代码在单独的开源项目里；是�
 
 ## 创建Dashboard RBAC认证
 
-注意：由于kube-apiserver启用了RBAC授权, 而官方源码的dashboard并没有定义授权ServiceAccount, 所以后续访问kube-apiserver的API时会被拒绝.
+注意：Kubenetes默认启用了RBAC授权, 而官方源码的dashboard并没有定义授权ServiceAccount, 所以后续访问kube-apiserver的API时会被拒绝。
 
 ``` bash
 # vim dashboard-rbac.yaml
@@ -52,7 +52,6 @@ subjects:
 
 ## 创建Dashboard Ingress服务
 
-注意：Kubernetes提供了NodePort、LoadBalancer、Ingress三种方式。
 注意：本示例采用了Ingress方式，参考：[部署Nginx-Ingress服务](https://github.com/Donyintao/nginx-ingress)
 
 ``` bash
