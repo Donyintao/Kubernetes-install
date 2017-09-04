@@ -8,7 +8,7 @@ Dashboard是Kubernetes的一个插件，代码在单独的开源项目里；是�
 # mkdir -p dashboard && cd dashboard
 # wget https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/addons/dashboard/dashboard-service.yaml
 # wget https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/addons/dashboard/dashboard-controller.yaml
-``` bash
+```
 
 ## 配置dashboard-deployment服务
 
@@ -98,6 +98,6 @@ kubernetes-dashboard   dashboard.host.com   192.168.3.99   80        55s
 ```
 ## 验证Dashboard服务
 
-通过浏览器访问域名，本示例域名：`dashboard.host.com`
+正常情况，可以通过浏览器访问域名，本示例域名：`http://dashboard.host.com`
 
 ![Dashboard](./images/dashboard.jpg)
