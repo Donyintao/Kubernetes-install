@@ -169,6 +169,7 @@ registry-ui:
 ```
 创建`CA`证书签名请求
 
+``` bash
 # cfssl print-defaults csr > ca-csr.json 
 # cat ca-csr.json 
 {
@@ -190,7 +191,7 @@ registry-ui:
 ```
 生成`CA`证书和私钥
 
-```
+``` bash
 # cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 ```
 
