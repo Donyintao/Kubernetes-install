@@ -1,4 +1,4 @@
-#搭建Docker私有仓库
+# 搭建Docker私有仓库
 
 ## 为什么要使用Docker私有仓库？
 使用私有仓库有许多优点： 
@@ -11,8 +11,8 @@
 + 可以通过定义compose文件，使用简单的一条命令同时起多个Docker Container运行不同的服务。
 + Docker-compose对于开发，测试，环境保存以及CI都提供了非常大的便利。
 
-## 安装Docker-compose
-注意：在实际使用操作中使用pip安装的docker-compose可能在执行时还会报代码有bug；推荐直接从github中下载稳定的release版本安装。
+## 安装Docker-compose管理工具
+注意：使用pip安装的docker-compose可能在执行时还会报代码有bug；推荐直接从github中下载稳定的release版本安装。
 ``` bash
 # curl -L https://github.com/docker/compose/releases/download/1.16.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
 # chmod +x /usr/local/bin/docker-compose
@@ -20,7 +20,7 @@
 
 ## 配置Registry Container和Registry UI
 
-创建docker-registry目录
+创建`docker-registry`目录
 
 ``` bash
 # mkdir -p /usr/local/docker-registry && cd /usr/local/docker-registry
@@ -56,12 +56,12 @@ log:
 
 ## 配置Nginx反向代理
 
-创建Nginx配置目录
+创建`Nginx`配置目录
 ``` bash
 # mkdir ./nginx/conf
 ```
 
-创建Nginx配置文件`registry.conf`
+创建配置文件`registry.conf`
 
 ``` bash
 vim ./nginx/conf/registry.conf
@@ -167,6 +167,8 @@ registry-ui:
   }
 }
 ```
+创建`CA`证书签名请求
+
 # cfssl print-defaults csr > ca-csr.json 
 # cat ca-csr.json 
 {
@@ -185,7 +187,10 @@ registry-ui:
     }
   ]
 }
+```
+生成`CA`证书和私钥
 
+```
 # cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 ```
 
