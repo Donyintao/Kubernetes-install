@@ -70,7 +70,7 @@
 
 注意：如果kube-apiserver证书访问API接口, 需要设置: ["O": "system:masters"]
 
-注意: 此处需要将dns ip、etcd、k8s-master节点的ip全部加上.
+注意：此处需要将dns ip(首个IP地址)、etcd、k8s-master节点的ip全部加上.
 
 ``` bash
 # cfssl print-defaults csr > kubernetes-csr.json
