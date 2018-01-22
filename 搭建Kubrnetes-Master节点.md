@@ -24,8 +24,8 @@ Controller Manager是Kubernetes最重要的核心组件之一，主要提供以�
 拷贝二进制文件
 
 ``` bash
-# mkdir -p /usr/local/kubernetes-v1.7.4/bin
-# ln -s /usr/local/kubernetes-v1.7.4 /usr/local/kubernetes
+# mkdir -p /usr/local/kubernetes-v1.9.1/bin
+# ln -s /usr/local/kubernetes-v1.9.1 /usr/local/kubernetes
 # cp -r `pwd`/kubernetes/server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kube-proxy,kubelet} /usr/local/kubernetes/bin
 ```
 
@@ -54,7 +54,7 @@ KUBE_LOG_LEVEL="--v=0"
 KUBE_ALLOW_PRIV="--allow-privileged=true"
  
 # How the controller-manager, scheduler, and proxy find the apiserver
-KUBE_MASTER="--master=https://192.168.100.110:6443"
+KUBE_MASTER="--master=https://172.16.30.171:6443"
 ```
 
 ## 配置和启动kube-apiserver
@@ -70,25 +70,31 @@ KUBE_MASTER="--master=https://192.168.100.110:6443"
 ##
 #
 ## The address on the local server to listen to.
-KUBE_API_ADDRESS="--advertise-address=192.168.100.110 --bind-address=0.0.0.0 --insecure-bind-address=0.0.0.0"
+KUBE_API_ADDRESS="--advertise-address=172.16.30.171 --bind-address=0.0.0.0 --insecure-bind-address=0.0.0.0"
 #
 ## The port on the local server to listen on.
 KUBE_API_PORT="--insecure-port=8080 --secure-port=6443"
 #
 ## Comma separated list of nodes in the etcd cluster
-KUBE_ETCD_SERVERS="--etcd-servers=http://192.168.100.110:2379"
+KUBE_ETCD_SERVERS="--etcd-servers=http://172.16.30.171:2379,http://172.16.30.172:2379,http://172.16.30.173:2379"
 #
 ## Address range to use for services
-KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=172.17.0.0/16"
+KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=172.21.0.0/16"
 #
 ## default admission control policies
-KUBE_ADMISSION_CONTROL="--admission-control=--admission-control=Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota"
+KUBE_ADMISSION_CONTROL="--admission-control=Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota"
 #
 ## Add your own!
-KUBE_API_ARGS="--apiserver-count=3 \
+KUBE_API_ARGS="--event-ttl=1h \
+               --apiserver-count=3 \
+               --audit-log-maxage=30 \
+               --audit-log-maxbackup=3 \
+               --audit-log-maxsize=100 \
                --storage-backend=etcd3 \
+               --enable-swagger-ui=true \
                --requestheader-allowed-names \
                --authorization-mode=Node,RBAC \
+               --audit-log-path=/var/log/audit.log \
                --service-node-port-range=1024-65535 \
                --requestheader-group-headers=X-Remote-Group \
                --requestheader-username-headers=X-Remote-User \
@@ -97,7 +103,7 @@ KUBE_API_ARGS="--apiserver-count=3 \
                --tls-cert-file=/etc/kubernetes/ssl/kube-apiserver.pem \
                --service-account-key-file=/etc/kubernetes/ssl/ca-key.pem \
                --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname \
-               --tls-private-key-file=/etc/kubernetes/ssl/kube-apiserver-key.pem"
+               --tls-private-key-file=/etc/kubernetes/ssl/kube-apiserver-key.pem" 
 ```
 
 创建kube-apiserver启动脚本
@@ -171,7 +177,7 @@ kind: Config
 clusters:
 - cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
-    server: https://192.168.100.110:6443
+    server: https://172.16.30.171:6443
   name: kubernetes
 contexts:
 - context:
@@ -245,7 +251,7 @@ kind: Config
 clusters:
 - cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
-    server: https://192.168.3.99:6443
+    server: https://172.16.30.171:6443
   name: kubernetes
 contexts:
 - context:
