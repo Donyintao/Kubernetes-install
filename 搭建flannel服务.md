@@ -12,7 +12,8 @@
 
 ## 创建Pod Network
 
-注意：flanneld v0.7.1版本目前不支持etcd v3, 使用etcd v2 API写入配置key和网段数据
+注意：flanneld v0.9.0版本目前不支持etcd v3, 使用etcd v2 API写入配置key和网段数据
+
 注意：集群网段地址`172.20.0.0/16`, SVC(DNS)网段地址`172.21.0.0/16`
 
 ``` bash
