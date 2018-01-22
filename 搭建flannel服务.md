@@ -12,10 +12,11 @@
 
 ## 创建Pod Network
 
-注意: flanneld v0.7.1版本目前不支持etcd v3, 使用etcd v2 API写入配置key和网段数据
+注意：flanneld v0.7.1版本目前不支持etcd v3, 使用etcd v2 API写入配置key和网段数据
+注意：集群网段地址`172.20.0.0/16`, SVC(DNS)网段地址`172.21.0.0/16`
 
 ``` bash
-# etcdctl set /flannel/network/config '{ "Network": "172.16.0.0/16", "Backend": { "Type": "host-gw" } }'
+# etcdctl set /flannel/network/config '{ "Network": "172.20.0.0/16", "Backend": { "Type": "host-gw" } }'
 ```
 
 ## 安装flannel服务
@@ -26,7 +27,7 @@
 # Flanneld configuration options  
  
 # etcd url location.  Point this to the server where etcd runs
-FLANNEL_ETCD_ENDPOINTS="http://192.168.100.110:2379,http://192.168.100.111:2379,http://192.168.100.112:2379"
+FLANNEL_ETCD_ENDPOINTS="http://172.16.30.171:2379,http://172.16.30.172:2379,http://172.16.30.173:2379"
  
 # etcd config key.  This is the configuration key that flannel queries
 # For address range assignment
@@ -40,7 +41,7 @@ FLANNEL_OPTIONS="-iface=eth0 -ip-masq"
 
 ## 配置docker启动服务
 
-注意: flannel服务要优先启动，docker服务启动脚本没有配置flannel服务优先级。
+注意：flannel服务要优先启动，docker服务启动脚本没有配置flannel服务优先级。
 
 ``` bash
 # vim/usr/lib/systemd/system/docker.service
