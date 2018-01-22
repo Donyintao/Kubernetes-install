@@ -28,13 +28,13 @@
 # vim /etc/etcd/etcd.conf
 ETCD_NAME=etcd_node1  // 节点名称
 ETCD_DATA_DIR="/var/lib/etcd/default.etcd"
-ETCD_LISTEN_PEER_URLS="http://192.168.100.110:2380"
-ETCD_LISTEN_CLIENT_URLS="http://192.168.100.110:2379,http://127.0.0.1:2379"  // 必须增加127.0.0.1否则启动会报错
-ETCD_INITIAL_ADVERTISE_PEER_URLS="http://192.168.100.110:2380"
-ETCD_INITIAL_CLUSTER="etcd_node1=http://192.168.100.110:2380,etcd_node2=http://192.168.100.111:2380"  // 集群IP地址
+ETCD_LISTEN_PEER_URLS="http://172.16.30.171:2380"
+ETCD_LISTEN_CLIENT_URLS="http://172.16.30.171:2379,http://127.0.0.1:2379"  // 必须增加127.0.0.1否则启动会报错
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://172.16.30.171:2380"
+ETCD_INITIAL_CLUSTER="etcd_node1=http://172.16.30.171:2380,etcd_node2=http://172.16.30.172:2380,etcd_node3=http://172.16.30.173:2380"  // 集群IP地址
 ETCD_INITIAL_CLUSTER_STATE="new"  // 初始化集群,第二次启动时将状态改为: "existing"
 ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
-ETCD_ADVERTISE_CLIENT_URLS="http://192.168.100.110:2379"
+ETCD_ADVERTISE_CLIENT_URLS="http://172.16.30.171:2379"
 # systemctl enable etcd.service 
 # systemctl start etcd.service && systemctl status etcd.service
 ```
@@ -52,18 +52,18 @@ ETCD_ADVERTISE_CLIENT_URLS="http://192.168.100.110:2379"
 
 ``` bash
 # etcdctl member list
-7e218077496bccf9: name=etcd_node1 peerURLs=http://192.168.100.110:2380 clientURLs=http://192.168.100.110:2379 isLeader=true
-92f1b7c038a4300a: name=etcd_node2 peerURLs=http://192.168.100.111:2380 clientURLs=http://192.168.100.111:2379 isLeader=false
-c8611e11b142e510: name=etcd_node3 peerURLs=http://192.168.100.112:2380 clientURLs=http://192.168.100.112:2379 isLeader=false
+7e218077496bccf9: name=etcd_node1 peerURLs=http://172.16.30.171:2380 clientURLs=http://172.16.30.171:2379 isLeader=true
+92f1b7c038a4300a: name=etcd_node2 peerURLs=http://172.16.30.172:2380 clientURLs=http://172.16.30.172:2379 isLeader=false
+c8611e11b142e510: name=etcd_node3 peerURLs=http://172.16.30.173:2380 clientURLs=http://172.16.30.173:2379 isLeader=false
 ```
 
 验证etcd集群状态
 
 ``` bash
 # etcdctl cluster-health
-member 7e218077496bccf9 is healthy: got healthy result from http://192.168.100.110:2379
-member 92f1b7c038a4300a is healthy: got healthy result from http://192.168.100.111:2379
-member c8611e11b142e510 is healthy: got healthy result from http://192.168.100.112:2379
+member 7e218077496bccf9 is healthy: got healthy result from http://172.16.30.171:2379
+member 92f1b7c038a4300a is healthy: got healthy result from http://172.16.30.172:2379
+member c8611e11b142e510 is healthy: got healthy result from http://172.16.30.173:2379
 cluster is healthy //表示安装成功
 ```
 
@@ -72,11 +72,23 @@ cluster is healthy //表示安装成功
 将目标节点添加到etcd集群
 
 ``` bash
+# etcdctl member add etcd_node4 http://172.16.30.174:2380
+Added member named etcd_etcd4 with ID 5282b16e923af92f to cluster
+ 
+ETCD_NAME="etcd_node4"
+ETCD_INITIAL_CLUSTER="etcd_node4=http://172.16.30.174:2380,etcd_node1=http://172.16.30.171:2380,etcd_node2=http://172.16.30.172:2380,etcd_node3=http://172.16.30.173:2380"
+ETCD_INITIAL_CLUSTER_STATE="existing"
+
+```
+
+查看成员列表. etcd_node4节点状态为: unstarted 
+
+``` bash
 # etcdctl member list
-5282b16e923af92f[unstarted]: peerURLs=http://192.168.100.115:2380
-7e218077496bccf9: name=etcd_node1 peerURLs=http://192.168.100.110:2380 clientURLs=http://192.168.100.110:2379 isLeader=true
-92f1b7c038a4300a: name=etcd_node2 peerURLs=http://192.168.100.111:2380 clientURLs=http://192.168.100.111:2379 isLeader=false
-c8611e11b142e510: name=etcd_node3 peerURLs=http://192.168.100.112:2380 clientURLs=http://192.168.100.112:2379 isLeader=false
+5282b16e923af92f[unstarted]: peerURLs=http://172.16.30.174:2380
+7e218077496bccf9: name=etcd_node1 peerURLs=http://172.16.30.171:2380 clientURLs=http://172.16.30.171:2379 isLeader=true
+92f1b7c038a4300a: name=etcd_node2 peerURLs=http://172.16.30.172:2380 clientURLs=http://172.16.30.172:2379 isLeader=false
+c8611e11b142e510: name=etcd_node3 peerURLs=http://172.16.30.173:2380 clientURLs=http://172.16.30.173:2379 isLeader=false
 ```
 
 配置etcd_node4节点的etcd.conf文件
@@ -85,13 +97,13 @@ c8611e11b142e510: name=etcd_node3 peerURLs=http://192.168.100.112:2380 clientURL
 # vim /etc/etcd/etcd.conf
 ETCD_NAME="etcd_node4" // 节点名称,对应etcd添加节点命令时输出的信息
 ETCD_DATA_DIR="/var/lib/etcd/etcd_node4.etcd"
-ETCD_LISTEN_PEER_URLS="http://192.168.100.115:2380"
-ETCD_LISTEN_CLIENT_URLS="http://192.168.100.115:2379,http://127.0.0.1:2379"
-ETCD_INITIAL_ADVERTISE_PEER_URLS="http://192.168.100.115:2380"
-ETCD_INITIAL_CLUSTER="etcd_node4=http://192.168.100.115:2380,etcd_node1=http://192.168.100.110:2380,etcd_node2=http://192.168.100.111:2380,etcd_node3=http://192.168.100.112:2380" // 集群列表,对应etcd添加节点命令时输出的信息
+ETCD_LISTEN_PEER_URLS="http://172.16.30.174:2380"
+ETCD_LISTEN_CLIENT_URLS="http://172.16.30.174:2379,http://127.0.0.1:2379"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://172.16.30.174:2380"
+ETCD_INITIAL_CLUSTER="etcd_node4=http://172.16.30.174:2380,etcd_node1=http://172.16.30.171:2380,etcd_node2=http://172.16.30.171:2380,etcd_node3=http://172.16.30.173:2380" // 集群列表,对应etcd添加节点命令时输出的信息
 ETCD_INITIAL_CLUSTER_STATE="existing" // 集群状态,对应etcd添加节点命令时输出的信息
 ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
-ETCD_ADVERTISE_CLIENT_URLS="http://192.168.100.115:2379"
+ETCD_ADVERTISE_CLIENT_URLS="http://172.16.30.174:2379"
 # systemctl enable etcd.service 
 # systemctl start etcd.service && systemctl status etcd.service
 ```
@@ -100,10 +112,10 @@ ETCD_ADVERTISE_CLIENT_URLS="http://192.168.100.115:2379"
 
 ``` bash
 # etcdctl member list
-5282b16e923af92f: name=etcd_node4 peerURLs=http://192.168.100.115:2380 clientURLs=http://192.168.100.115:2379 isLeader=false
-7e218077496bccf9: name=etcd_node1 peerURLs=http://192.168.100.110:2380 clientURLs=http://192.168.100.110:2379 isLeader=true
-92f1b7c038a4300a: name=etcd_node2 peerURLs=http://192.168.100.111:2380 clientURLs=http://192.168.100.111:2379 isLeader=false
-c8611e11b142e510: name=etcd_node3 peerURLs=http://192.168.100.112:2380 clientURLs=http://192.168.100.112:2379 isLeader=false
+5282b16e923af92f: name=etcd_node4 peerURLs=http://172.16.30.174:2380 clientURLs=http://172.16.30.174:2379 isLeader=false
+7e218077496bccf9: name=etcd_node1 peerURLs=http://172.16.30.171:2380 clientURLs=http://172.16.30.171:2379 isLeader=true
+92f1b7c038a4300a: name=etcd_node2 peerURLs=http://172.16.30.172:2380 clientURLs=http://172.16.30.172:2379 isLeader=false
+c8611e11b142e510: name=etcd_node3 peerURLs=http://172.16.30.173:2380 clientURLs=http://172.16.30.173:2379 isLeader=false
 ```
 
 ## etcd集群删除节点
@@ -114,7 +126,7 @@ c8611e11b142e510: name=etcd_node3 peerURLs=http://192.168.100.112:2380 clientURL
 # etcdctl member remove 5282b16e923af92f
 Removed member 5282b16e923af92f from cluster
 # etcdctl member list
-7e218077496bccf9: name=etcd_node1 peerURLs=http://192.168.100.110:2380 clientURLs=http://192.168.100.110:2379 isLeader=true
-92f1b7c038a4300a: name=etcd_node2 peerURLs=http://192.168.100.111:2380 clientURLs=http://192.168.100.111:2379 isLeader=false
-c8611e11b142e510: name=etcd_node3 peerURLs=http://192.168.100.112:2380 clientURLs=http://192.168.100.112:2379 isLeader=false
+7e218077496bccf9: name=etcd_node1 peerURLs=http://172.16.30.171:2380 clientURLs=http://172.16.30.171:2379 isLeader=true
+92f1b7c038a4300a: name=etcd_node2 peerURLs=http://172.16.30.172:2380 clientURLs=http://172.16.30.172:2379 isLeader=false
+c8611e11b142e510: name=etcd_node3 peerURLs=http://172.16.30.173:2380 clientURLs=http://172.16.30.173:2379 isLeader=false
 ```
