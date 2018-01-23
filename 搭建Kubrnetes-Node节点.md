@@ -19,24 +19,25 @@ kube-proxy可以直接运行在物理机上，也可以以static pod或者daemon
 
 ## kube-proxy实现方式
 
-当前kube-proxy支持三种种实现方式：
+当前kube-proxy支持四种实现方式：
 
 + userspace：最早的负载均衡方案，它在用户空间监听一个端口，所有服务通过iptables转发到这个端口，然后在其内部负载均衡到实际的Pod。该方式最主要的问题是效率低，有明显的性能瓶颈。
 + iptables：目前推荐的方案，完全以iptables规则的方式来实现service负载均衡。该方式最主要的问题是在服务多的时候产生太多的iptables规则(社区有人提到过几万条)，大规模下也有性能问题
 + winuserspace：同userspace，但仅工作在windows上
++ ipvs：1.8版本以后引入了ipvs模式，目前最新版本为bata版本
 
 ## 下载kubernetes组件的二进制文件
 
 ``` bash
-# wget https://storage.googleapis.com/kubernetes-release/release/v1.7.4/kubernetes-server-linux-amd64.tar.gz
+# wget https://storage.googleapis.com/kubernetes-release/release/v1.9.1/kubernetes-server-linux-amd64.tar.gz
 # tar fx kubernetes-server-linux-amd64.tar.gz
 ```
 
 拷贝二进制文件
 
 ``` bash
-# mkdir -p /usr/local/kubernetes-v1.7.4/bin
-# ln -s /usr/local/kubernetes-v1.7.4 /usr/local/kubernetes
+# mkdir -p /usr/local/kubernetes-v1.9.1/bin
+# ln -s /usr/local/kubernetes-v1.9.1 /usr/local/kubernetes
 # cp -r `pwd`/kubernetes/server/bin/{kube-proxy,kubelet} /usr/local/kubernetes/bin
 ```
 
@@ -65,7 +66,7 @@ KUBE_LOG_LEVEL="--v=0"
 KUBE_ALLOW_PRIV="--allow-privileged=true"
  
 # How the controller-manager, scheduler, and proxy find the apiserver
-KUBE_MASTER="--master=https://192.168.100.110:6443"
+KUBE_MASTER="--master=https://172.16.30.171:6443"
 
 ## 配置和启动kubelet服务
 
@@ -77,20 +78,20 @@ KUBE_MASTER="--master=https://192.168.100.110:6443"
 ## kubernetes kubelet (minion) config
 #
 ## The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
-KUBELET_ADDRESS="--address=192.168.100.110"
+KUBELET_ADDRESS="--address=172.16.30.171"
 #
 ## The port for the info server to serve on
 KUBELET_PORT="--port=10250"
 #
 ## You may leave this blank to use the actual hostname
-KUBELET_HOSTNAME="--hostname-override=192.168.100.110"
+KUBELET_HOSTNAME="--hostname-override=k8s-node1"
 #
 ## pod infrastructure container
 KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=gcr.io/google_containers/pause-amd64:3.0"
 #
 ## Add your own!
 KUBELET_ARGS="--cgroup-driver=systemd \
-              --cluster-dns=172.16.0.2 \
+              --cluster-dns=172.21.0.2 \
               --require-kubeconfig=true \
               --serialize-image-pulls=false \
               --cluster-domain=cluster.local. \
@@ -103,7 +104,7 @@ KUBELET_ARGS="--cgroup-driver=systemd \
 ```
 
 创建kubelet TLS认证配置文件
-注意：1.7.x版本中增加了Node Restriction模式，采用system:node:NodeName方式来认证
+注意：1.7.x以上版本中增加了Node Restriction模式，采用system:node:NodeName方式来认证
 
 ``` bash
 # vim /etc/kubernetes/kubelet.kubeconfig
@@ -112,16 +113,16 @@ kind: Config
 clusters:
 - cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
-    server: https://192.168.100.110:6443
+    server: https://172.16.30.171:6443
   name: kubernetes
 contexts:
 - context:
     cluster: kubernetes
-    user: system:node:node10
+    user: system:node:k8s-node1
   name: kube-context
 current-context: kube-context
 users:
-- name: system:node
+- name: system:node:k8s-node1
   user:
     client-certificate: /etc/kubernetes/ssl/kubelet.pem
     client-key: /etc/kubernetes/ssl/kubelet-key.pem
@@ -170,17 +171,30 @@ WantedBy=multi-user.target
 
 创建kube-proxy配置文件
 
+注意：1.9.x版本ipvs是beta版本，可以测试开启ipvs方式.
+
+注意：–masquerade-all参数必须配置，否则创建SVC在ipvs不会添加规则.
+
 ``` bash
-# vim /etc/kubernetes/kube-proxy
 ###
 # kubernetes proxy config
- 
+#
+# The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
+KUBE_PROXY_ADDRESS="--bind-address=172.16.30.171"
+#
+## You may leave this blank to use the actual hostname
+KUBE_PROXY_HOSTNAME="--hostname-override=k8s-node1"
+
 # default config should be adequate
- 
+
 # Add your own!
-KUBE_PROXY_ARGS="--bind-address=192.168.100.114 \
-                 --hostname-override=192.168.100.114 \
-                 --cluster-cidr=172.16.0.0/16 \
+KUBE_PROXY_ARGS="--masquerade-all \
+                 --proxy-mode=ipvs \
+                 --ipvs-scheduler=rr \
+                 --ipvs-sync-period=5s \
+                 --ipvs-min-sync-period=5s \
+                 --cluster-cidr=172.20.0.0/16 \
+                 --feature-gates=SupportIPVSProxyMode=true \
                  --log-dir=/data/kubernetes/logs/kube-proxy \
                  --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
 ```
@@ -194,7 +208,7 @@ kind: Config
 clusters:
 - cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
-    server: https://192.168.100.110:6443
+    server: https://172.16.30.171:6443
   name: kubernetes
 contexts:
 - context:
@@ -220,10 +234,12 @@ After=network.target
 [Service]
 EnvironmentFile=-/etc/kubernetes/kube-config
 EnvironmentFile=-/etc/kubernetes/kube-proxy
-ExecStart=/usr/local/kubernetes/server/bin/kube-proxy \
+ExecStart=/usr/local/kubernetes/bin/kube-proxy \
         $KUBE_LOGTOSTDERR \
         $KUBE_LOG_LEVEL \
         $KUBE_MASTER \
+        $KUBE_PROXY_ADDRESS \
+        $KUBE_PROXY_HOSTNAME \
         $KUBE_PROXY_ARGS
  
 Restart=on-failure
@@ -235,9 +251,12 @@ WantedBy=multi-user.target
  
 创建kube-proxy日志目录
 
+``` bash
 # mkdir /data/kubernetes/logs/kube-proxy -p
 # systemctl daemon-reload
 # systemctl enable kube-proxy && systemctl start kube-proxy && systemctl status kube-proxy
+```
+
 
 ## 验证Node节点是否正常
 
@@ -245,8 +264,8 @@ WantedBy=multi-user.target
 
 ``` bash
 # kubectl get node -o wide
-NAME           STATUS    AGE       VERSION   EXTERNAL-IP   OS-IMAGE                KERNEL-VERSION
-192.168.3.95   Ready     34d       v1.7.4    <none>        CentOS Linux 7 (Core)   3.10.0-327.el7.x86_64
-192.168.3.96   Ready     34d       v1.7.4    <none>        CentOS Linux 7 (Core)   3.10.0-327.el7.x86_64
-192.168.3.99   Ready     34d       v1.7.4    <none>        CentOS Linux 7 (Core)   3.10.0-327.el7.x86_64
+NAME        STATUS    ROLES     AGE       VERSION   EXTERNAL-IP   OS-IMAGE                KERNEL-VERSION                CONTAINER-RUNTIME
+k8s-node1   Ready     <none>    2d        v1.9.1    <none>        CentOS Linux 7 (Core)   4.4.112-1.el7.elrepo.x86_64   docker://1.12.6
+k8s-node2   Ready     <none>    2d        v1.9.1    <none>        CentOS Linux 7 (Core)   4.4.112-1.el7.elrepo.x86_64   docker://1.12.6
+k8s-node3   Ready     <none>    2d        v1.9.1    <none>        CentOS Linux 7 (Core)   4.4.112-1.el7.elrepo.x86_64   docker://1.12.6
 ```
