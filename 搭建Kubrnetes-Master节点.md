@@ -14,6 +14,18 @@ kube-scheduler是Kubernetes最重要的核心组件之一，主要提供以下�
 Controller Manager是Kubernetes最重要的核心组件之一，主要提供以下的功能：
 + 主要kube-controller-manager和cloud-controller-manager组成，是Kubernetes的大脑，它通过apiserver监控整个集群的状态，并确保集群处于预期的工作状态。
 
+## 升级master和node节点内核版本
+``` bash
+# rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+# rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
+# yum -y install --enablerepo=elrepo-kernel kernel-lt-devel kernel-lt  
+# grub2-set-default 0
+# grub2-mkconfig -o /boot/grub2/grub.cfg
+# reboot
+# uname -r
+4.4.112-1.el7.elrepo.x86_64
+```
+
 ## 下载kubernetes组件的二进制文件
 
 ``` bash
@@ -203,7 +215,7 @@ After=network.target
 [Service]
 EnvironmentFile=-/etc/kubernetes/kube-config
 EnvironmentFile=-/etc/kubernetes/kube-controller-manager
-ExecStart=/usr/local/kubernetes/server/bin/kube-controller-manager \
+ExecStart=/usr/local/kubernetes/bin/kube-controller-manager \
           $KUBE_LOGTOSTDERR \
           $KUBE_LOG_LEVEL \
           $KUBE_MASTER \
