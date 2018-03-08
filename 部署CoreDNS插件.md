@@ -14,28 +14,26 @@ CoreDNS可以通过UDP/TCP(旧式的DNS)，TLS(RFC 7858)和gRPC(不是标准)监
 
 ``` bash
 # mkdir -p coredns && coredns
-# wget https://raw.githubusercontent.com/coredns/deployment/master/kubernetes/coredns.yaml.sed
+# wget https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/addons/dns/coredns.yaml.sed
 # cp coredns.yaml.sed coredns.yaml
 ```
 
 ## 配置CoreDNS服务
 
-注意：需要将`CLUSTER_DOMAIN`设置为集群环境中的域名, 这个域名需要和`kubelet`的`--cluster-domain`参数值一致.
+注意：需要将`$DNS_DOMAIN`设置为集群环境中的域名, 这个域名需要和`kubelet`的`--cluster-domain`参数值一致.
 
-注意：需要将`REVERSE_CIDRS`设置为集群环境中SVC地址段，这个地址段需要和`kube-apiserver`的`--service-cluster-ip-range`参数值一致.
-
-注意：需要将`CLUSTER_DNS_IP`设置为集群环境的IP, 这个`IP`需要和`kubelet`的`--cluster-dns`参数值一致.
+注意：需要将`$DNS_SERVER_IP`设置为集群环境的IP, 这个`IP`需要和`kubelet`的`--cluster-dns`参数值一致.
 
 ``` bash
 # diff coredns.yaml coredns.yaml.sed 
-52c52
-<         kubernetes cluster.local 172.21.0.0/16
+61c61
+<         kubernetes cluster.local. in-addr.arpa ip6.arpa
 ---
->         kubernetes CLUSTER_DOMAIN REVERSE_CIDRS
-147c147
+>         kubernetes $DNS_DOMAIN in-addr.arpa ip6.arpa
+153c153
 <   clusterIP: 172.21.0.2
 ---
->   clusterIP: CLUSTER_DNS_IP
+>   clusterIP: $DNS_SERVER_IP
 ```
 ## 安装CoreDNS服务
 
