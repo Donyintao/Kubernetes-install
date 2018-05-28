@@ -29,15 +29,15 @@ Controller Manager是Kubernetes最重要的核心组件之一，主要提供以�
 ## 下载kubernetes组件的二进制文件
 
 ``` bash
-# wget https://storage.googleapis.com/kubernetes-release/release/v1.9.1/kubernetes-server-linux-amd64.tar.gz
+# wget https://storage.googleapis.com/kubernetes-release/release/v1.10.2/kubernetes-server-linux-amd64.tar.gz
 # tar fx kubernetes-server-linux-amd64.tar.gz
 ```
 
 拷贝二进制文件
 
 ``` bash
-# mkdir -p /usr/local/kubernetes-v1.9.1/bin
-# ln -s /usr/local/kubernetes-v1.9.1 /usr/local/kubernetes
+# mkdir -p /usr/local/kubernetes-v1.10.2/bin
+# ln -s /usr/local/kubernetes-v1.10.2 /usr/local/kubernetes
 # cp -r `pwd`/kubernetes/server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kube-proxy,kubelet} /usr/local/kubernetes/bin
 ```
 
