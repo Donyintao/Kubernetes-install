@@ -1,4 +1,4 @@
-# 部署kube-dns插件
+# 部署kube-dns服务
 
 ## kube-dns作用
 
