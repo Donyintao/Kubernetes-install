@@ -16,6 +16,7 @@
 1. [部署Kubrnetes-Master节点](部署Kubrnetes-Master节点.md)
 1. [部署Kubrnetes-Node节点](部署Kubrnetes-Node节点.md)
 1. [部署CoreDNS服务](部署CoreDNS插件.md)
+1. [部署Nginx Ingress服务](https://github.com/Donyintao/nginx-ingress/)
 1. [部署Dashboard插件](部署Dashboard插件.md)
 1. [部署Prometheus服务](部署Prometheus服务.md)
 1. [部署Grafana服务](部署Grafana服务.md)
