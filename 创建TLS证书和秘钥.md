@@ -60,6 +60,7 @@
   ]
 }
 # cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+
 ```
 
 ## 创建kube-apiserver证书
@@ -73,7 +74,7 @@
 注意：此处需要将dns ip(首个IP地址)、etcd、k8s-master节点的ip全部加上.
 
 ``` bash
-# cfssl print-defaults csr > kubernetes-csr.json
+# cfssl print-defaults csr > kube-apiserver-csr.json
 # cat kube-apiserver-csr.json 
 {
     "CN": "kubernetes",
@@ -153,7 +154,7 @@
 创建kube-scheduler证书签名请求
 
 ``` bash
-# cfssl print-defaults csr > admin-csr.json 
+# cfssl print-defaults csr > kube-scheduler-csr.json 
 # cat kube-scheduler-csr.json 
 {
   "CN": "system:kube-scheduler",
@@ -188,7 +189,8 @@
 创建kubelet证书签名请求
 
 ``` bash
-# cat > kubelet-csr.json << EOF
+# cfssl print-defaults csr > kubelet-csr.json
+# cat kubelet-csr.json
 {
   "CN": "kubelet",
   "hosts": [],
@@ -206,16 +208,15 @@
     }
   ]
 }
-EOF
 ```
  
 生成kubelet证书和私钥
 
 ``` bash
-cfssl gencert -ca=ca.pem \
-              -ca-key=ca-key.pem \
-              -config=ca-config.json \
-              -profile=kubernetes kubelet-csr.json | cfssljson -bare kubelet
+# cfssl gencert -ca=ca.pem \
+                -ca-key=ca-key.pem \
+                -config=ca-config.json \
+                -profile=kubernetes kubelet-csr.json | cfssljson -bare kubelet
 ```
 
 ## 创建kube-proxy证书
