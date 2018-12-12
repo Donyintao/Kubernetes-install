@@ -47,8 +47,6 @@ FLANNEL_OPTIONS="-iface=eth0 -ip-masq"
 # yum -y install docker-ce-17.09.1.ce-1.el7.centos.x86_64
 ```
 ## 配置docker启动服务
-vim /etc/docker/daemon.json
-注意：flannel服务要优先启动，docker服务启动脚本没有配置flannel服务优先级。
 
 ``` bash
 # vim /etc/docker/daemon.json
@@ -86,7 +84,7 @@ WantedBy=multi-user.target
 ```
 ## 验证Docker服务获取IP是否正常
 
-注意：如果Docker服务没有正确获取IP，Docker启动脚本是否配置`$DOCKER_NETWORK_OPTIONS`参数；并请检查flannel服务是否正常启动。
+注意：如果Docker服务没有获取正确的IP地址，请检查Docker启动脚本是否配置`$DOCKER_NETWORK_OPTIONS`参数；并检查flannel服务是否正常启动。
 
 ``` bash
 # ifconfig docker0
