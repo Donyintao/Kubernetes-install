@@ -12,7 +12,7 @@
 
 ## 创建Pod Network
 
-注意：flanneld v0.9.0版本目前不支持etcd v3, 使用etcd v2 API写入配置key和网段数据
+注意：flanneld v0.10.0版本目前不支持etcd v3, 使用etcd v2 API写入配置key和网段数据
 
 注意：集群网段地址`172.20.0.0/16`, SVC(DNS)网段地址`172.21.0.0/16`
 
@@ -40,62 +40,58 @@ FLANNEL_OPTIONS="-iface=eth0 -ip-masq"
 # systemctl enable flanneld && systemctl restart flanneld && systemctl status flanneld
 ```
 
+## 安装Docker CE服务
+``` bash
+# wget -P /etc/yum.repos.d/ https://download.docker.com/linux/centos/docker-ce.repo
+# yum list docker-ce.x86_64  --showduplicates | sort -r
+# yum -y install docker-ce-17.09.1.ce-1.el7.centos.x86_64
+```
 ## 配置docker启动服务
-
+vim /etc/docker/daemon.json
 注意：flannel服务要优先启动，docker服务启动脚本没有配置flannel服务优先级。
 
 ``` bash
+# vim /etc/docker/daemon.json
+{
+    "registry-mirrors": ["http://d7eabb7d.m.daocloud.io"],
+    "storage-driver": "overlay2",
+    "graph": "/data/docker"
+}
+
 # vim/usr/lib/systemd/system/docker.service
 [Unit]
 Description=Docker Application Container Engine
-Documentation=http://docs.docker.com
-After=network.target
-After=flanneld.service
-Wants=docker-storage-setup.service
-Requires=docker-cleanup.timer
+Documentation=https://docs.docker.com
+After=network-online.target firewalld.service flanneld.service
+Wants=network-online.target
 
 [Service]
 Type=notify
-NotifyAccess=all
-KillMode=process
-EnvironmentFile=-/etc/sysconfig/docker
-EnvironmentFile=-/etc/sysconfig/docker-storage
-EnvironmentFile=-/etc/sysconfig/docker-network
-Environment=GOTRACEBACK=crash
-Environment=DOCKER_HTTP_HOST_COMPAT=1
-Environment=PATH=/usr/libexec/docker:/usr/bin:/usr/sbin
-ExecStart=/usr/bin/dockerd-current \
-          --add-runtime docker-runc=/usr/libexec/docker/docker-runc-current \
-          --default-runtime=docker-runc \
-          --exec-opt native.cgroupdriver=systemd \
-          --userland-proxy-path=/usr/libexec/docker/docker-proxy-current \
-          $OPTIONS \
-          $DOCKER_STORAGE_OPTIONS \
-          $DOCKER_NETWORK_OPTIONS \
-          $ADD_REGISTRY \
-          $BLOCK_REGISTRY \
-          $INSECURE_REGISTRY
+ExecStart=/usr/bin/dockerd $DOCKER_NETWORK_OPTIONS
 ExecReload=/bin/kill -s HUP $MAINPID
-LimitNOFILE=1048576
-LimitNPROC=1048576
+LimitNOFILE=infinity
+LimitNPROC=infinity
 LimitCORE=infinity
 TimeoutStartSec=0
-Restart=on-abnormal
-MountFlags=slave
+Delegate=yes
+KillMode=process
+Restart=on-failure
+StartLimitBurst=3
+StartLimitInterval=60s
 
 [Install]
 WantedBy=multi-user.target
 
 # systemctl enable docker && systemctl restart docker && systemctl status docker
 ```
-## 验证docker服务获取IP是否正常
+## 验证Docker服务获取IP是否正常
 
-注意：`yum`方式安装flannel，docker无需做任何配置的；如果docker服务没有正确获取IP，请检查flannel服务是否正常启动。
+注意：如果Docker服务没有正确获取IP，Docker启动脚本是否配置`$DOCKER_NETWORK_OPTIONS`参数；并请检查flannel服务是否正常启动。
 
 ``` bash
 # ifconfig docker0
 docker0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 172.16.36.1  netmask 255.255.255.0  broadcast 0.0.0.0
+        inet 172.20.20.1  netmask 255.255.255.0  broadcast 0.0.0.0
         ether 02:42:d0:0b:23:be  txqueuelen 0  (Ethernet)
         RX packets 39657261  bytes 7409081483 (6.9 GiB)
         RX errors 0  dropped 0  overruns 0  frame 0
