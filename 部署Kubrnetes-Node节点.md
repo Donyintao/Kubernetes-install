@@ -36,8 +36,8 @@ kube-proxy可以直接运行在物理机上，也可以以static pod或者daemon
 拷贝二进制文件
 
 ``` bash
-# mkdir -p /usr/local/kubernetes-v1.9.1/bin
-# ln -s /usr/local/kubernetes-v1.9.1 /usr/local/kubernetes
+# mkdir -p /usr/local/kubernetes-v1.12.3/bin
+# ln -s /usr/local/kubernetes-v1.12.3 /usr/local/kubernetes
 # cp -r `pwd`/kubernetes/server/bin/{kube-proxy,kubelet} /usr/local/kubernetes/bin
 ```
 
@@ -90,13 +90,13 @@ KUBELET_HOSTNAME="--hostname-override=k8s-node1"
 KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=gcr.io/google_containers/pause-amd64:3.0"
 #
 ## Add your own!
-KUBELET_ARGS="--cgroup-driver=systemd \
-              --cluster-dns=172.21.0.2 \
-              --require-kubeconfig=true \
+KUBELET_ARGS="--cgroup-driver=cgroupfs \
+              --cluster-dns=172.21.0.254 \
+              --cluster-domain=testing.com. \
               --serialize-image-pulls=false \
-              --cluster-domain=cluster.local. \
               --hairpin-mode promiscuous-bridge \
-              --log-dir=/data/kubernetes/logs/kubelet \
+              --experimental-fail-swap-on=false \
+              --log-dir=/data/logs/kubernetes/kubelet \
               --client-ca-file=/etc/kubernetes/ssl/ca.pem \
               --tls-cert-file=/etc/kubernetes/ssl/kubelet.pem \
               --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
@@ -167,15 +167,48 @@ WantedBy=multi-user.target
 # systemctl enable kubelet && systemctl start kubelet && systemctl status kubelet
 ```
 
+## 内核模块加载
+``` bash
+# yum -y install conntrack-tools ipvsadm
+# cat > /etc/sysconfig/modules/ipvs.modules <<EOF
+#!/bin/bash
+ipvs_modules="ip_vs ip_vs_lc ip_vs_wlc ip_vs_rr ip_vs_wrr ip_vs_lblc ip_vs_lblcr ip_vs_dh ip_vs_sh ip_vs_fo ip_vs_nq ip_vs_sed ip_vs_ftp nf_conntrack_ipv4"
+for kernel_module in \${ipvs_modules}; do
+    /sbin/modinfo -F filename \${kernel_module} > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        /sbin/modprobe \${kernel_module}
+    fi
+done
+EOF
+chmod +x /etc/sysconfig/modules/ipvs.modules && bash /etc/sysconfig/modules/ipvs.modules && lsmod | grep ip_vs
+ip_vs_ftp              16384  0 
+ip_vs_sed              16384  0 
+ip_vs_nq               16384  0 
+ip_vs_fo               16384  0 
+ip_vs_sh               16384  0 
+ip_vs_dh               16384  0 
+ip_vs_lblcr            16384  0 
+ip_vs_lblc             16384  0 
+ip_vs_wrr              16384  0 
+ip_vs_rr               16384  0 
+ip_vs_wlc              16384  0 
+ip_vs_lc               16384  0 
+ip_vs                 147456  24 ip_vs_dh,ip_vs_fo,ip_vs_lc,ip_vs_nq,ip_vs_rr,ip_vs_sh,ip_vs_ftp,ip_vs_sed,ip_vs_wlc,ip_vs_wrr,ip_vs_lblcr,ip_vs_lblc
+nf_nat                 28672  3 ip_vs_ftp,nf_nat_ipv4,nf_nat_masquerade_ipv4
+nf_conntrack          110592  7 ip_vs,nf_nat,nf_nat_ipv4,xt_conntrack,nf_nat_masquerade_ipv4,nf_conntrack_netlink,nf_conntrack_ipv4
+libcrc32c              16384  2 xfs,ip_vs
+```
+
 ## 配置和启动kube-proxy服务
 
 创建kube-proxy配置文件
 
-注意：1.9.x版本ipvs是beta版本，可以测试开启ipvs方式.
+注意：1.12.x版本ipvs默认已经开启，1.11.x版本可以启用`--proxy-mode=ipvs`参数开启ipvs.
 
 注意：–masquerade-all参数必须配置，否则创建SVC在ipvs不会添加规则.
 
 ``` bash
+# vim /etc/kubernetes/kube-proxy
 ###
 # kubernetes proxy config
 #
@@ -188,13 +221,10 @@ KUBE_PROXY_HOSTNAME="--hostname-override=k8s-node1"
 # default config should be adequate
 
 # Add your own!
-KUBE_PROXY_ARGS="--masquerade-all \
-                 --proxy-mode=ipvs \
-                 --ipvs-scheduler=rr \
+KUBE_PROXY_ARGS="--ipvs-scheduler=rr \
                  --ipvs-sync-period=5s \
                  --ipvs-min-sync-period=5s \
                  --cluster-cidr=172.20.0.0/16 \
-                 --feature-gates=SupportIPVSProxyMode=true \
                  --log-dir=/data/kubernetes/logs/kube-proxy \
                  --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
 ```
@@ -265,7 +295,7 @@ WantedBy=multi-user.target
 ``` bash
 # kubectl get node -o wide
 NAME        STATUS    ROLES     AGE       VERSION   EXTERNAL-IP   OS-IMAGE                KERNEL-VERSION                CONTAINER-RUNTIME
-k8s-node1   Ready     <none>    2d        v1.9.1    <none>        CentOS Linux 7 (Core)   4.4.112-1.el7.elrepo.x86_64   docker://1.12.6
-k8s-node2   Ready     <none>    2d        v1.9.1    <none>        CentOS Linux 7 (Core)   4.4.112-1.el7.elrepo.x86_64   docker://1.12.6
-k8s-node3   Ready     <none>    2d        v1.9.1    <none>        CentOS Linux 7 (Core)   4.4.112-1.el7.elrepo.x86_64   docker://1.12.6
+k8s-node1   Ready     <none>    2d        v1.12.3    <none>        CentOS Linux 7 (Core)   4.4.166-1.el7.elrepo.x86_64   docker://17.9.1
+k8s-node2   Ready     <none>    2d        v1.12.3    <none>        CentOS Linux 7 (Core)   4.4.166-1.el7.elrepo.x86_64   docker://17.9.1
+k8s-node3   Ready     <none>    2d        v1.12.3    <none>        CentOS Linux 7 (Core)   4.4.166-1.el7.elrepo.x86_64   docker://17.9.1
 ```
