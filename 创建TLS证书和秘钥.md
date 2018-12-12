@@ -2,7 +2,7 @@
 
 `kubernetes`系统各组件需要使用`TLS`证书对通信进行加密，本文档使用`CloudFlare`的PKI工具集[cfssl](https://github.com/cloudflare/cfssl)来生成Certificate Authority(CA)证书和秘钥文件，CA 是自签名的证书，用来签名后续创建的其它TLS证书。
 
-## 安装 `CFSSL`
+## 安装CFSSL
 
 ``` bash
 # wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -O /usr/local/bin/cfssl
@@ -11,9 +11,9 @@
 # chmod +x /usr/local/bin/cfssl*
 ```
 
-## 创建CA(Certificate Authority)
+## 创建CA证书(Certificate Authority)
 
-创建CA配置文件
+创建CA证书配置文件
 
 ``` bash
 # cfssl print-defaults config > ca-config.json
