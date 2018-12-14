@@ -91,6 +91,7 @@ KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=gcr.io/google_container
 #
 ## Add your own!
 KUBELET_ARGS="--cgroup-driver=cgroupfs \
+              --root-dir=/data/kubelet \
               --cluster-dns=172.21.0.254 \
               --cluster-domain=testing.com. \
               --serialize-image-pulls=false \
@@ -180,7 +181,7 @@ for kernel_module in \${ipvs_modules}; do
     fi
 done
 EOF
-chmod +x /etc/sysconfig/modules/ipvs.modules && bash /etc/sysconfig/modules/ipvs.modules && lsmod | grep ip_vs
+# chmod +x /etc/sysconfig/modules/ipvs.modules && bash /etc/sysconfig/modules/ipvs.modules && lsmod | grep ip_vs
 ip_vs_ftp              16384  0 
 ip_vs_sed              16384  0 
 ip_vs_nq               16384  0 
