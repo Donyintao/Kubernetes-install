@@ -67,6 +67,7 @@ KUBE_ALLOW_PRIV="--allow-privileged=true"
  
 # How the controller-manager, scheduler, and proxy find the apiserver
 KUBE_MASTER="--master=https://172.16.30.171:6443"
+```
 
 ## 配置和启动kubelet服务
 
@@ -204,9 +205,7 @@ libcrc32c              16384  2 xfs,ip_vs
 
 创建kube-proxy配置文件
 
-注意：1.12.x版本ipvs默认已经开启，1.11.x版本可以启用`--proxy-mode=ipvs`参数开启ipvs.
-
-注意：–masquerade-all参数必须配置，否则创建SVC在ipvs不会添加规则.
+注意：1.12.x版本ipvs默认已经开启，可以启用`--proxy-mode=ipvs`参数开启ipvs.
 
 ``` bash
 # vim /etc/kubernetes/kube-proxy
@@ -222,7 +221,8 @@ KUBE_PROXY_HOSTNAME="--hostname-override=k8s-node1"
 # default config should be adequate
 
 # Add your own!
-KUBE_PROXY_ARGS="--ipvs-scheduler=rr \
+KUBE_PROXY_ARGS="--proxy-mode=ipvs \
+                 --ipvs-scheduler=rr \
                  --ipvs-sync-period=5s \
                  --ipvs-min-sync-period=5s \
                  --cluster-cidr=172.20.0.0/16 \
