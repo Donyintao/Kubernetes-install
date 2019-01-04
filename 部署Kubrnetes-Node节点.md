@@ -110,7 +110,7 @@ KUBELET_ARGS="--network-plugin=cni \
 # vim kubelet.config
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
-address: 172.16.0.103
+address: 172.16.30.171
 port: 10250
 cgroupDriver: cgroupfs
 clusterDNS:
