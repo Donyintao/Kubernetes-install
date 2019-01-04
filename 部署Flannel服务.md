@@ -56,7 +56,7 @@ FLANNEL_OPTIONS="-iface=eth0 -ip-masq"
     "graph": "/data/docker"
 }
 
-# vim/usr/lib/systemd/system/docker.service
+# vim /usr/lib/systemd/system/docker.service
 [Unit]
 Description=Docker Application Container Engine
 Documentation=https://docs.docker.com
