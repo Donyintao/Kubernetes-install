@@ -103,6 +103,7 @@ KUBELET_ARGS="--network-plugin=cni \
 ```
 
 创建kubelet config文件
+
 主意：1.12.x版本后，kubelet服务建议使用该方式配置
 
 ``` bash
@@ -143,6 +144,7 @@ runtimeRequestTimeout: 2m0s
 ```
 
 创建kubelet TLS认证配置文件
+
 注意：1.7.x以上版本中增加了Node Restriction模式，采用system:node:NodeName方式来认证
 
 ``` bash
