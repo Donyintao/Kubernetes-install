@@ -75,7 +75,7 @@ KUBE_LOGTOSTDERR="--logtostderr=false"
 KUBE_LOG_LEVEL="--v=0"
  
 # How the controller-manager, scheduler, and proxy find the apiserver
-KUBE_MASTER="--master=https://172.16.30.171:6443"
+KUBE_MASTER="--master=https://172.16.30.0.101:6443"
 ```
 
 ## 配置和启动kubelet服务
@@ -91,7 +91,7 @@ KUBE_MASTER="--master=https://172.16.30.171:6443"
 KUBELET_HOSTNAME="--hostname-override=k8s-node1"
 #
 ## pod infrastructure container
-KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=gcr.io/google_containers/pause-amd64:3.0"
+KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=k8s.gcr.io/pause:3.1"
 #
 ## Add your own!
 KUBELET_ARGS="--network-plugin=cni \
@@ -110,7 +110,7 @@ KUBELET_ARGS="--network-plugin=cni \
 # vim kubelet.config
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
-address: 172.16.30.171
+address: 172.16.30.0.101
 port: 10250
 cgroupDriver: cgroupfs
 clusterDNS:
@@ -154,7 +154,7 @@ kind: Config
 clusters:
 - cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
-    server: https://172.16.30.171:6443
+    server: https://172.16.30.0.101:6443
   name: kubernetes
 contexts:
 - context:
@@ -249,7 +249,7 @@ libcrc32c              16384  2 xfs,ip_vs
 # kubernetes proxy config
 #
 # The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
-KUBE_PROXY_ADDRESS="--bind-address=172.16.30.171"
+KUBE_PROXY_ADDRESS="--bind-address=172.16.30.0.101"
 #
 ## You may leave this blank to use the actual hostname
 KUBE_PROXY_HOSTNAME="--hostname-override=k8s-node1"
@@ -275,7 +275,7 @@ kind: Config
 clusters:
 - cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
-    server: https://172.16.30.171:6443
+    server: https://172.16.30.0.101:6443
   name: kubernetes
 contexts:
 - context:
