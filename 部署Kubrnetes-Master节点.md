@@ -61,12 +61,9 @@ KUBE_LOGTOSTDERR="--logtostderr=false"
  
 # journal message level, 0 is debug
 KUBE_LOG_LEVEL="--v=0"
- 
-# Should this cluster be allowed to run privileged docker containers
-KUBE_ALLOW_PRIV="--allow-privileged=true"
- 
+
 # How the controller-manager, scheduler, and proxy find the apiserver
-KUBE_MASTER="--master=https://172.16.30.171:6443"
+KUBE_MASTER="--master=https://172.16.0.101:6443"
 ```
 
 ## 配置和启动kube-apiserver
@@ -82,13 +79,13 @@ KUBE_MASTER="--master=https://172.16.30.171:6443"
 ##
 #
 ## The address on the local server to listen to.
-KUBE_API_ADDRESS="--advertise-address=172.16.30.171 --bind-address=0.0.0.0 --insecure-bind-address=0.0.0.0"
+KUBE_API_ADDRESS="--advertise-address=172.16.0.101 --bind-address=0.0.0.0 --insecure-bind-address=0.0.0.0"
 #
 ## The port on the local server to listen on.
 KUBE_API_PORT="--insecure-port=8080 --secure-port=6443"
 #
 ## Comma separated list of nodes in the etcd cluster
-KUBE_ETCD_SERVERS="--etcd-servers=http://172.16.30.171:2379,http://172.16.30.172:2379,http://172.16.30.173:2379"
+KUBE_ETCD_SERVERS="--etcd-servers=http://172.16.0.101:2379,http://172.16.0.102:2379,http://172.16.0.103:2379"
 #
 ## Address range to use for services
 KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=172.21.0.0/16"
@@ -110,7 +107,7 @@ KUBE_API_ARGS="--event-ttl=1h \
                --service-node-port-range=1024-65535 \
                --requestheader-group-headers=X-Remote-Group \
                --requestheader-username-headers=X-Remote-User \
-               --log-dir=/data/kubernetes/logs/kube-apiserver \
+               --log-dir=/data/logs/kubernetes/kube-apiserver \
                --client-ca-file=/etc/kubernetes/ssl/ca.pem \
                --tls-cert-file=/etc/kubernetes/ssl/kube-apiserver.pem \
                --service-account-key-file=/etc/kubernetes/ssl/ca-key.pem \
@@ -136,7 +133,6 @@ ExecStart=/usr/local/kubernetes/bin/kube-apiserver \
           $KUBE_API_ADDRESS \
           $KUBE_API_PORT \
           $KUBELET_PORT \
-          $KUBE_ALLOW_PRIV \
           $KUBE_SERVICE_ADDRESSES \
           $KUBE_ADMISSION_CONTROL \
           $KUBE_API_ARGS
@@ -152,7 +148,7 @@ WantedBy=multi-user.target
 创建kube-apiserver日志目录
 
 ``` bash
-# mkdir /data/kubernetes/logs/kube-apiserver -p
+# mkdir /data/logs/kubernetes/kube-apiserver -p
 # systemctl daemon-reload
 # systemctl enable kube-apiserver && systemctl start kube-apiserver && systemctl status kube-apiserver
 ```
@@ -172,6 +168,7 @@ WantedBy=multi-user.target
 KUBE_CONTROLLER_MANAGER_ARGS=--address=127.0.0.1 \
                              --leader-elect=true \
                              --cluster-name=kubernetes \
+                             --cluster-cidr=10.240.0.0/16 \
                              --use-service-account-credentials=true \
                              --root-ca-file=/etc/kubernetes/ssl/ca.pem \
                              --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem \
@@ -190,7 +187,7 @@ kind: Config
 clusters:
 - cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
-    server: https://172.16.30.171:6443
+    server: https://172.16.0.101:6443
   name: kubernetes
 contexts:
 - context:
@@ -264,7 +261,7 @@ kind: Config
 clusters:
 - cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
-    server: https://172.16.30.171:6443
+    server: https://172.16.0.101:6443
   name: kubernetes
 contexts:
 - context:
