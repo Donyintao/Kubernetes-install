@@ -74,28 +74,19 @@ KUBE_LOGTOSTDERR="--logtostderr=false"
 # journal message level, 0 is debug
 KUBE_LOG_LEVEL="--v=0"
  
-# Should this cluster be allowed to run privileged docker containers
-KUBE_ALLOW_PRIV="--allow-privileged=true"
- 
 # How the controller-manager, scheduler, and proxy find the apiserver
 KUBE_MASTER="--master=https://172.16.30.171:6443"
 ```
 
 ## 配置和启动kubelet服务
 
-创建kubelet配置文件
+创建kubelet文件
 
 ``` bash
 # vim /etc/kubernetes/kubelet
-###
-## kubernetes kubelet (minion) config
-#
-## The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
-KUBELET_ADDRESS="--address=172.16.30.171"
-#
-## The port for the info server to serve on
-KUBELET_PORT="--port=10250"
-#
+####
+## kubernetes kubelet config
+####
 ## You may leave this blank to use the actual hostname
 KUBELET_HOSTNAME="--hostname-override=k8s-node1"
 #
@@ -103,18 +94,52 @@ KUBELET_HOSTNAME="--hostname-override=k8s-node1"
 KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=gcr.io/google_containers/pause-amd64:3.0"
 #
 ## Add your own!
-KUBELET_ARGS="--cgroup-driver=cgroupfs \
+KUBELET_ARGS="--network-plugin=cni \
               --root-dir=/data/kubelet \
-              --cluster-dns=172.21.0.254 \
-              --cluster-domain=testing.com. \
-              --serialize-image-pulls=false \
-              --hairpin-mode promiscuous-bridge \
-              --experimental-fail-swap-on=false \
               --log-dir=/data/logs/kubernetes/kubelet \
-              --client-ca-file=/etc/kubernetes/ssl/ca.pem \
-              --tls-cert-file=/etc/kubernetes/ssl/kubelet.pem \
-              --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
-              --tls-private-key-file=/etc/kubernetes/ssl/kubelet-key.pem"
+              --cert-dir=/etc/kubernetes/ssl \
+              --config=/etc/kubernetes/kubelet.config \
+              --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
+```
+
+创建kubelet config文件
+主意：1.12.x版本后，kubelet服务建议使用该方式配置
+
+``` bash
+# vim kubelet.config
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+address: 172.16.0.103
+port: 10250
+cgroupDriver: cgroupfs
+clusterDNS:
+- 10.241.0.254
+clusterDomain: testing.com.
+failSwapOn: false
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    cacheTTL: 2m0s
+    enabled: true
+  x509:
+    clientCAFile: /usr/local/kubernetes/etc/ssl/ca.pem
+authorization:
+  mode: Webhook
+  webhook:
+    cacheAuthorizedTTL: 5m0s
+    cacheUnauthorizedTTL: 30s
+maxOpenFiles: 1000000
+maxPods: 200
+serializeImagePulls: true
+failSwapOn: false
+fileCheckFrequency: 20s
+hairpinMode: promiscuous-bridge
+healthzBindAddress: 127.0.0.1
+healthzPort: 10248
+httpCheckFrequency: 20s
+resolvConf: /etc/resolv.conf
+runtimeRequestTimeout: 2m0s
 ```
 
 创建kubelet TLS认证配置文件
@@ -158,10 +183,7 @@ ExecStart=/usr/local/kubernetes/bin/kubelet \
             $KUBE_LOGTOSTDERR \
             $KUBE_LOG_LEVEL \
             $KUBELET_API_SERVER \
-            $KUBELET_ADDRESS \
-            $KUBELET_PORT \
             $KUBELET_HOSTNAME \
-            $KUBE_ALLOW_PRIV \
             $KUBELET_POD_INFRA_CONTAINER \
             $KUBELET_ARGS
  
