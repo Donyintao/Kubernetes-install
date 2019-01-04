@@ -24,7 +24,19 @@ kube-proxy可以直接运行在物理机上，也可以以static pod或者daemon
 + userspace：最早的负载均衡方案，它在用户空间监听一个端口，所有服务通过iptables转发到这个端口，然后在其内部负载均衡到实际的Pod。该方式最主要的问题是效率低，有明显的性能瓶颈。
 + iptables：目前推荐的方案，完全以iptables规则的方式来实现service负载均衡。该方式最主要的问题是在服务多的时候产生太多的iptables规则(社区有人提到过几万条)，大规模下也有性能问题
 + winuserspace：同userspace，但仅工作在windows上
-+ ipvs：1.8版本以后引入了ipvs模式，目前最新版本为bata版本
++ ipvs：1.8版本以后引入了ipvs模式，目前最新版本为GA版本
+
+## 升级master和node节点内核版本
+``` bash
+# rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+# rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
+# yum -y install --enablerepo=elrepo-kernel kernel-lt-devel kernel-lt  
+# grub2-set-default 0
+# grub2-mkconfig -o /boot/grub2/grub.cfg
+# reboot
+# uname -r
+4.4.112-1.el7.elrepo.x86_64
+```
 
 ## 下载kubernetes组件的二进制文件
 
