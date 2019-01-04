@@ -60,4 +60,15 @@ spec:
 # calicoctl get ipPool -o wide
 NAME                  CIDR            NAT    IPIPMODE      DISABLED   
 default-ipv4-ippool   10.240.0.0/16   true   CrossSubnet   false
+
+# calicoctl node status
+Calico process is running.
+
+IPv4 BGP status
++--------------+-------------------+-------+------------+-------------+
+| PEER ADDRESS |     PEER TYPE     | STATE |   SINCE    |    INFO     |
++--------------+-------------------+-------+------------+-------------+
+| 172.16.0.102 | node-to-node mesh | up    | 2019-01-03 | Established |
+| 172.16.0.103 | node-to-node mesh | up    | 2019-01-03 | Established |
++--------------+-------------------+-------+------------+-------------+
 ```
