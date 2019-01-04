@@ -14,10 +14,10 @@
 
 注意：flanneld v0.10.0版本目前不支持etcd v3, 使用etcd v2 API写入配置key和网段数据
 
-注意：集群网段地址`172.20.0.0/16`, SVC(DNS)网段地址`172.21.0.0/16`
+注意：容器网段地址`10.240.0/16`, SVC(DNS)网段地址`10.241.0.0/16`
 
 ``` bash
-# etcdctl set /flannel/network/config '{ "Network": "172.20.0.0/16", "Backend": { "Type": "host-gw" } }'
+# etcdctl set /flannel/network/config '{ "Network": "10.240.0/16", "Backend": { "Type": "host-gw" } }'
 ```
 
 ## 安装flannel服务
@@ -28,7 +28,7 @@
 # Flanneld configuration options  
  
 # etcd url location.  Point this to the server where etcd runs
-FLANNEL_ETCD_ENDPOINTS="http://172.16.30.171:2379,http://172.16.30.172:2379,http://172.16.30.173:2379"
+FLANNEL_ETCD_ENDPOINTS="http://172.16.0.101:2379,http://172.16.0.102:2379,http://172.16.0.103:2379"
  
 # etcd config key.  This is the configuration key that flannel queries
 # For address range assignment
@@ -89,7 +89,7 @@ WantedBy=multi-user.target
 ``` bash
 # ifconfig docker0
 docker0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 172.20.20.1  netmask 255.255.255.0  broadcast 0.0.0.0
+        inet 10.240.36.1  netmask 255.255.255.0  broadcast 0.0.0.0
         ether 02:42:d0:0b:23:be  txqueuelen 0  (Ethernet)
         RX packets 39657261  bytes 7409081483 (6.9 GiB)
         RX errors 0  dropped 0  overruns 0  frame 0
