@@ -88,7 +88,7 @@ KUBE_API_PORT="--insecure-port=8080 --secure-port=6443"
 KUBE_ETCD_SERVERS="--etcd-servers=http://172.16.0.101:2379,http://172.16.0.102:2379,http://172.16.0.103:2379"
 #
 ## Address range to use for services
-KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=172.21.0.0/16"
+KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.241.0.0/16"
 #
 ## default admission control policies
 KUBE_ADMISSION_CONTROL="--admission-control=Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota"
