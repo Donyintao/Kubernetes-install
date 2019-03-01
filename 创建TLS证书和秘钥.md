@@ -16,8 +16,9 @@
 创建CA证书配置文件
 
 ``` bash
+# mkdir /tmp/sslTmp && cd /tmp/sslTmp
 # cfssl print-defaults config > ca-config.json
-# cat ca-config.json
+# cat > ca-config.json << EOF
 {
   "signing": {
     "default": {
@@ -36,13 +37,14 @@
     }
   }
 }
+EOF
 ```
 
 创建CA证书签名请求
 
 ``` bash
 # cfssl print-defaults csr > ca-csr.json 
-# cat ca-csr.json 
+# cat > ca-csr.json << EOF 
 {
   "CN": "kubernetes",
   "key": {
@@ -59,6 +61,7 @@
     }
   ]
 }
+EOF
 # cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 
 ```
@@ -75,7 +78,7 @@
 
 ``` bash
 # cfssl print-defaults csr > kube-apiserver-csr.json
-# cat kube-apiserver-csr.json 
+# cat > kube-apiserver-csr.json << EOF
 {
     "CN": "kubernetes",
     "hosts": [
@@ -87,8 +90,8 @@
       "kubernetes",
       "kubernetes.default",
       "kubernetes.default.svc",
-      "kubernetes.default.svc.cluster",
-      "kubernetes.default.svc.cluster.local"
+      "kubernetes.default.svc.testing",
+      "kubernetes.default.svc.testing.com"
     ],
     "key": {
         "algo": "rsa",
@@ -104,6 +107,7 @@
         }
     ]
 }
+EOF
 ``` 
 
 生成kubernetes证书和私钥
@@ -121,7 +125,7 @@
 
 ``` bash
 # cfssl print-defaults csr > kube-controller-manager-csr.json 
-# cat kube-controller-manager-csr.json 
+# cat > kube-controller-manager-csr.json << EOF
 {
   "CN": "system:kube-controller-manager",
   "hosts": [],
@@ -139,6 +143,7 @@
     }
   ]
 }
+EOF
 ``` 
 生成kube-controller-manager证书和私钥
 
@@ -155,7 +160,7 @@
 
 ``` bash
 # cfssl print-defaults csr > kube-scheduler-csr.json 
-# cat kube-scheduler-csr.json 
+# cat > kube-scheduler-csr.json << EOF
 {
   "CN": "system:kube-scheduler",
   "hosts": [],
@@ -173,6 +178,7 @@
     }
   ]
 }
+EOF
 ```
  
 生成kube-scheduler证书和私钥
@@ -190,7 +196,7 @@
 
 ``` bash
 # cfssl print-defaults csr > kubelet-csr.json
-# cat kubelet-csr.json
+# cat > kubelet-csr.json << EOF
 {
   "CN": "kubelet",
   "hosts": [],
@@ -208,6 +214,7 @@
     }
   ]
 }
+EOF
 ```
  
 生成kubelet证书和私钥
@@ -225,7 +232,7 @@
 
 ``` bash
 # cfssl print-defaults csr > kube-proxy-csr.json
-# cat kube-proxy-csr.json
+# cat > kube-proxy-csr.json << EOF
 {
   "CN": "system:kube-proxy",
   "hosts": [],
@@ -243,6 +250,7 @@
     }
   ]
 }
+EOF
 ```
  
 生成kube-proxy客户端证书和私钥
@@ -345,5 +353,5 @@ aDz1i4/WZhJSUQyDfx7HzJpAmBE=
 将`TLS`证书拷贝到`Kubernetes Master`和`Kubernetes node`的配置目录
 
 ``` bash
-# mkdir -p /etc/kubernetes/ssl && cp /tmp/ssl/*.pem /etc/kubernetes/ssl
+# mkdir -p /etc/kubernetes/ssl && cp /tmp/sslTmp/*.pem /etc/kubernetes/ssl
 ```
