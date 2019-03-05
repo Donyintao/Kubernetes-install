@@ -56,11 +56,12 @@ Controller Manager是Kubernetes最重要的核心组件之一，主要提供以�
 #   kube-scheduler.service
 #   kubelet.service
 #   kube-proxy.service
+#
 # logging to stderr means we get it in the systemd journal
 KUBE_LOGTOSTDERR="--logtostderr=false"
  
 # journal message level, 0 is debug
-KUBE_LOG_LEVEL="--v=0"
+KUBE_LOG_LEVEL="--v=1"
 
 # How the controller-manager, scheduler, and proxy find the apiserver
 KUBE_MASTER="--master=https://172.16.0.101:6443"
@@ -72,26 +73,26 @@ KUBE_MASTER="--master=https://172.16.0.101:6443"
 
 ``` bash
 # vim /etc/kubernetes/kube-apiserver
-###
+####
 ## kubernetes system config
 ##
 ## The following values are used to configure the kube-apiserver
-##
+####
 #
 ## The address on the local server to listen to.
-KUBE_API_ADDRESS="--advertise-address=172.16.0.101 --bind-address=0.0.0.0 --insecure-bind-address=0.0.0.0"
+KUBE_API_ADDRESS="--advertise-address=10.8.0.114 --bind-address=0.0.0.0"
 #
 ## The port on the local server to listen on.
-KUBE_API_PORT="--insecure-port=8080 --secure-port=6443"
+KUBE_API_PORT="--secure-port=6443"
 #
 ## Comma separated list of nodes in the etcd cluster
-KUBE_ETCD_SERVERS="--etcd-servers=http://172.16.0.101:2379,http://172.16.0.102:2379,http://172.16.0.103:2379"
+KUBE_ETCD_SERVERS="--etcd-servers=https://10.8.0.114:2379,https://10.8.0.31:2379,https://10.8.0.171:2379"
 #
 ## Address range to use for services
 KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.241.0.0/16"
 #
 ## default admission control policies
-KUBE_ADMISSION_CONTROL="--admission-control=Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota"
+KUBE_ADMISSION_CONTROL="--enable-admission-plugins=Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota"
 #
 ## Add your own!
 KUBE_API_ARGS="--event-ttl=1h \
@@ -108,6 +109,9 @@ KUBE_API_ARGS="--event-ttl=1h \
                --requestheader-group-headers=X-Remote-Group \
                --requestheader-username-headers=X-Remote-User \
                --log-dir=/data/logs/kubernetes/kube-apiserver \
+               --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
+               --etcd-certfile=/etc/kubernetes/ssl/kube-apiserver.pem \
+               --etcd-keyfile=/etc/kubernetes/ssl/kube-apiserver-key.pem \
                --client-ca-file=/etc/kubernetes/ssl/ca.pem \
                --tls-cert-file=/etc/kubernetes/ssl/kube-apiserver.pem \
                --service-account-key-file=/etc/kubernetes/ssl/ca-key.pem \
@@ -159,12 +163,11 @@ WantedBy=multi-user.target
 
 ``` bash
 # vim /etc/kubernetes/kube-controller-manager
-###
-# The following values are used to configure the kubernetes controller-manager
- 
-# defaults from config and apiserver should be adequate
- 
-# Add your own!
+####
+## The following values are used to configure the kubernetes controller-manager
+####
+#  
+## Add your own!
 KUBE_CONTROLLER_MANAGER_ARGS=--address=127.0.0.1 \
                              --leader-elect=true \
                              --cluster-name=kubernetes \
@@ -240,12 +243,11 @@ WantedBy=multi-user.target
 
 ``` bash
 # vim /etc/kubernetes/kube-scheduler
-###
-# kubernetes scheduler config
- 
-# default config should be adequate
- 
-# Add your own!
+####
+## kubernetes scheduler config
+####
+#
+## Add your own!
 KUBE_SCHEDULER_ARGS="--leader-elect=true \
                      --address=127.0.0.1 \
                      --log-dir=/data/kubernetes/logs/kube-scheduler \
