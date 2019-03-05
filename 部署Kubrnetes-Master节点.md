@@ -232,7 +232,7 @@ WantedBy=multi-user.target
 创建kube-controller-manager日志目录
 
 ``` bash
-# mkdir /data/kubernetes/logs/kube-controller-manager -p
+# mkdir /data/logs/kubernetes/kube-controller-manager -p
 # systemctl daemon-reload
 # systemctl enable kube-controller-manager && systemctl start kube-controller-manager && systemctl status kube-controller-manager
 ```
@@ -250,7 +250,7 @@ WantedBy=multi-user.target
 ## Add your own!
 KUBE_SCHEDULER_ARGS="--leader-elect=true \
                      --address=127.0.0.1 \
-                     --log-dir=/data/kubernetes/logs/kube-scheduler \
+                     --log-dir=/data/logs/kubernetes/kube-scheduler \
                      --kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig"
 ```
 
@@ -305,7 +305,7 @@ WantedBy=multi-user.target
 创建kube-scheduler日志目录
 
 ``` bash
-# mkdir /data/kubernetes/logs/kube-scheduler -p
+# mkdir /data/logs/kubernetes/kube-scheduler -p
 # systemctl daemon-reload
 # systemctl enable kube-scheduler && systemctl start kube-scheduler && systemctl status kube-scheduler
 ```
