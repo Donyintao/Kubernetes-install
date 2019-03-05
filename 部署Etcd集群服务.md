@@ -135,6 +135,8 @@ cluster is healthy //表示安装成功
 
 将目标节点添加到etcd集群
 
+注意: 需要重新生成新的证书，将新的IP地址添加进去。
+
 ``` bash
 # etcdctl --endpoints=https://127.0.0.1:2379 \
           --ca-file=/etc/etcd/ssl/ca.pem \
