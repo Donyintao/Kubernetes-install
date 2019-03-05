@@ -10,8 +10,9 @@
 
 ![](https://github.com/coreos/flannel/blob/master/packet-01.png)
 
-## 创建成Flanneld证书
+## 创建Flanneld证书
 ``` bash
+# cd /tmp/sslTmp
 # cat > flanneld-csr.json << EOF
 {
     "CN": "flanneld",
