@@ -10,14 +10,52 @@
 
 ![](https://github.com/coreos/flannel/blob/master/packet-01.png)
 
+## 创建成Flanneld证书
+``` bash
+# cat > flanneld-csr.json << EOF
+{
+    "CN": "flanneld",
+    "hosts": [],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "CN",
+            "ST": "BeiJing",
+            "L": "BeiJing",
+            "O": "k8s",
+            "OU": "System"
+        }
+    ]
+}
+EOF
+```
+
+生成Flanneld证书和私钥
+
+``` bash
+# cfssl gencert -ca=ca.pem \
+                -ca-key=ca-key.pem \
+                -config=ca-config.json \
+                -profile=kubernetes flanneld-csr.json | cfssljson -bare flanneld
+```
+
 ## 创建Pod Network
 
-注意：flanneld v0.10.0版本目前不支持etcd v3, 使用etcd v2 API写入配置key和网段数据
+注意：flanneld v0.11.0版本目前不支持etcd v3, 使用etcd v2 API写入配置key和网段数据
 
 注意：容器网段地址`10.240.0/16`, SVC(DNS)网段地址`10.241.0.0/16`
 
 ``` bash
-# etcdctl set /flannel/network/config '{ "Network": "10.240.0/16", "Backend": { "Type": "host-gw" } }'
+# mkdir -p /etc/flannel/ssl
+# cp /tmp/sslTmp/{ca.pem,flanneld.pem,flanneld-key.pem} /etc/flannel/ssl
+# etcdctl --endpoints=https://127.0.0.1:2379 \
+          --ca-file=/etc/flannel/ssl/ca.pem \
+          --cert-file=/etc/flannel/ssl/flanneld.pem \
+          --key-file=/etc/flannel/ssl/flanneld-key.pem \
+          set /flannel/network/config '{ "Network": "10.240.0.0/16", "Backend": { "Type": "host-gw" } }'
 ```
 
 ## 安装flannel服务
@@ -28,14 +66,14 @@
 # Flanneld configuration options  
  
 # etcd url location.  Point this to the server where etcd runs
-FLANNEL_ETCD_ENDPOINTS="http://172.16.0.101:2379,http://172.16.0.102:2379,http://172.16.0.103:2379"
+FLANNEL_ETCD_ENDPOINTS="https://172.16.0.101:2379,https://172.16.0.102:2379,https://172.16.0.103:2379"
  
 # etcd config key.  This is the configuration key that flannel queries
 # For address range assignment
 FLANNEL_ETCD_PREFIX="/flannel/network"
  
 # Any additional options that you want to pass
-FLANNEL_OPTIONS="-iface=eth0 -ip-masq"
+FLANNEL_OPTIONS="-etcd-cafile=/etc/flannel/ssl/ca.pem -etcd-certfile=/etc/flannel/ssl/flanneld.pem -etcd-keyfile=/etc/flannel/ssl/flanneld-key.pem -iface=eth0 -ip-masq"
 
 # systemctl enable flanneld && systemctl restart flanneld && systemctl status flanneld
 ```
