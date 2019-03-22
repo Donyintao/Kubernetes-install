@@ -21,21 +21,37 @@
 
 ``` bash
 # mkdir -p /tmp/calico && cd /tmp/calico
-# wget https://docs.projectcalico.org/v3.4/getting-started/kubernetes/installation/hosted/calico.yaml
+# wget https://docs.projectcalico.org/v3.6/getting-started/kubernetes/installation/hosted/calico.yaml
 # cp calico.yaml calico.yaml.bak
-# diff calico.yaml.bak calico.yaml
-16c16
-<   etcd_endpoints: "http://10.96.232.136:6666"
+# diff calico.yaml calico.yaml.bak 
+17,19c17,19
+<   etcd-key:  (cat /etc/etcd/ssl/etcd-key.pem | base64 -w 0)
+<   etcd-cert: (cat /etc/etcd/ssl/etcd.pem | base64 -w 0)
+<   etcd-ca:   (cat /etc/etcd/ssl/ca.pem | base64 -w 0) 
 ---
->   etcd_endpoints: "http://172.16.0.101:2379,http://172.16.0.102:2379,http://172.16.0.103:2379"
-216c216
-<               value: "Always"
+>   # etcd-key: null
+>   # etcd-cert: null
+>   # etcd-ca: null
+30c30
+<   etcd_endpoints: "https://172.16.0.101:2379,https://172.16.0.102:2379,https://172.16.0.103:2379"
 ---
->               value: "CrossSubnet"
-227c227
-<               value: "192.168.0.0/16"
+>   etcd_endpoints: "http://<ETCD_IP>:<ETCD_PORT>"
+34,36c34,36
+<   etcd_ca:   "/calico-secrets/etcd-ca"
+<   etcd_cert: "/calico-secrets/etcd-cert"
+<   etcd_key:  "/calico-secrets/etcd-key"
 ---
->               value: "10.240.0.0/16"
+>   etcd_ca: ""   # "/calico-secrets/etcd-ca"
+>   etcd_cert: "" # "/calico-secrets/etcd-cert"
+>   etcd_key: ""  # "/calico-secrets/etcd-key"
+300c300
+<               value: "CrossSubnet"
+---
+>               value: "Always"
+311c311
+<               value: "10.240.0.0/16"
+---
+>               value: "192.168.0.0/16"
 # kubectl apply -f calico.yaml
 ```
 
