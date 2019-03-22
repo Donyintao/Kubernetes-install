@@ -29,15 +29,15 @@ Controller Manager是Kubernetes最重要的核心组件之一，主要提供以�
 ## 下载kubernetes组件的二进制文件
 
 ``` bash
-# wget https://storage.googleapis.com/kubernetes-release/release/v1.12.2/kubernetes-server-linux-amd64.tar.gz
+# wget https://storage.googleapis.com/kubernetes-release/release/v1.13.4/kubernetes-server-linux-amd64.tar.gz
 # tar fx kubernetes-server-linux-amd64.tar.gz
 ```
 
 拷贝二进制文件
 
 ``` bash
-# mkdir -p /usr/local/kubernetes-v1.12.3/bin
-# ln -s /usr/local/kubernetes-v1.12.3 /usr/local/kubernetes
+# mkdir -p /usr/local/kubernetes-v1.13.4/bin
+# ln -s /usr/local/kubernetes-v1.13.4 /usr/local/kubernetes
 # cp -r `pwd`/kubernetes/server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kube-proxy,kubelet} /usr/local/kubernetes/bin
 ```
 
@@ -56,15 +56,18 @@ Controller Manager是Kubernetes最重要的核心组件之一，主要提供以�
 #   kube-scheduler.service
 #   kubelet.service
 #   kube-proxy.service
-#
+###
 # logging to stderr means we get it in the systemd journal
 KUBE_LOGTOSTDERR="--logtostderr=false"
- 
+
 # journal message level, 0 is debug
 KUBE_LOG_LEVEL="--v=1"
 
+# Should this cluster be allowed to run privileged docker containers
+KUBE_ALLOW_PRIV="--allow-privileged=true"
+
 # How the controller-manager, scheduler, and proxy find the apiserver
-KUBE_MASTER="--master=https://172.16.0.101:6443"
+KUBE_MASTER="--master=https://172.16.0.253:6443"
 ```
 
 ## 配置和启动kube-apiserver
@@ -77,16 +80,16 @@ KUBE_MASTER="--master=https://172.16.0.101:6443"
 ## kubernetes system config
 ##
 ## The following values are used to configure the kube-apiserver
+##
 ####
-#
 ## The address on the local server to listen to.
-KUBE_API_ADDRESS="--advertise-address=10.8.0.114 --bind-address=0.0.0.0"
+KUBE_API_ADDRESS="--advertise-address=0.0.0.0 --bind-address=0.0.0.0"
 #
 ## The port on the local server to listen on.
 KUBE_API_PORT="--secure-port=6443"
 #
 ## Comma separated list of nodes in the etcd cluster
-KUBE_ETCD_SERVERS="--etcd-servers=https://10.8.0.114:2379,https://10.8.0.31:2379,https://10.8.0.171:2379"
+KUBE_ETCD_SERVERS="--etcd-servers=https://172.16.0.101:2379,https://172.16.0.102:2379,https://172.16.0.103:2379"
 #
 ## Address range to use for services
 KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.241.0.0/16"
@@ -190,7 +193,7 @@ kind: Config
 clusters:
 - cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
-    server: https://172.16.0.101:6443
+    server: https://172.16.0.253:6443
   name: kubernetes
 contexts:
 - context:
@@ -263,7 +266,7 @@ kind: Config
 clusters:
 - cluster:
     certificate-authority: /etc/kubernetes/ssl/ca.pem
-    server: https://172.16.0.101:6443
+    server: https://172.16.0.253:6443
   name: kubernetes
 contexts:
 - context:
