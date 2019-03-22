@@ -41,15 +41,15 @@ kube-proxy可以直接运行在物理机上，也可以以static pod或者daemon
 ## 下载kubernetes组件的二进制文件
 
 ``` bash
-# wget https://storage.googleapis.com/kubernetes-release/release/v1.9.1/kubernetes-server-linux-amd64.tar.gz
+# wget https://storage.googleapis.com/kubernetes-release/release/v1.13.4/kubernetes-server-linux-amd64.tar.gz
 # tar fx kubernetes-server-linux-amd64.tar.gz
 ```
 
 拷贝二进制文件
 
 ``` bash
-# mkdir -p /usr/local/kubernetes-v1.12.3/bin
-# ln -s /usr/local/kubernetes-v1.12.3 /usr/local/kubernetes
+# mkdir -p /usr/local/kubernetes-v1.13.4/bin
+# ln -s /usr/local/kubernetes-v1.13.4 /usr/local/kubernetes
 # cp -r `pwd`/kubernetes/server/bin/{kube-proxy,kubelet} /usr/local/kubernetes/bin
 ```
 
@@ -68,14 +68,18 @@ kube-proxy可以直接运行在物理机上，也可以以static pod或者daemon
 #   kube-scheduler.service
 #   kubelet.service
 #   kube-proxy.service
+###
 # logging to stderr means we get it in the systemd journal
 KUBE_LOGTOSTDERR="--logtostderr=false"
- 
+
 # journal message level, 0 is debug
-KUBE_LOG_LEVEL="--v=0"
- 
+KUBE_LOG_LEVEL="--v=1"
+
+# Should this cluster be allowed to run privileged docker containers
+KUBE_ALLOW_PRIV="--allow-privileged=true"
+
 # How the controller-manager, scheduler, and proxy find the apiserver
-KUBE_MASTER="--master=https://172.16.30.0.101:6443"
+KUBE_MASTER="--master=https://172.16.0.253:8443"
 ```
 
 ## 配置和启动kubelet服务
@@ -87,6 +91,7 @@ KUBE_MASTER="--master=https://172.16.30.0.101:6443"
 ####
 ## kubernetes kubelet config
 ####
+#
 ## You may leave this blank to use the actual hostname
 KUBELET_HOSTNAME="--hostname-override=k8s-node1"
 #
@@ -94,8 +99,7 @@ KUBELET_HOSTNAME="--hostname-override=k8s-node1"
 KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=k8s.gcr.io/pause:3.1"
 #
 ## Add your own!
-KUBELET_ARGS="--network-plugin=cni \
-              --root-dir=/data/kubelet \
+KUBELET_ARGS="--root-dir=/data/kubelet \
               --log-dir=/data/logs/kubernetes/kubelet \
               --cert-dir=/etc/kubernetes/ssl \
               --config=/etc/kubernetes/kubelet.config \
@@ -104,10 +108,10 @@ KUBELET_ARGS="--network-plugin=cni \
 
 创建kubelet config文件
 
-主意：1.12.x版本后，kubelet服务建议使用该方式配置
+说明：1.12.x版本后，kubelet服务建议使用config方式配置
 
 ``` bash
-# vim kubelet.config
+# vim /etc/kubernetes/kubelet.config
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
 address: 172.16.30.0.101
@@ -119,12 +123,12 @@ clusterDomain: testing.com.
 failSwapOn: false
 authentication:
   anonymous:
-    enabled: false
+    enabled: true
   webhook:
     cacheTTL: 2m0s
     enabled: true
   x509:
-    clientCAFile: /usr/local/kubernetes/etc/ssl/ca.pem
+    clientCAFile: /etc/kubernetes/ssl/ca.pem
 authorization:
   mode: Webhook
   webhook:
@@ -200,14 +204,14 @@ WantedBy=multi-user.target
 
 ``` bash
 # mkdir /data/kubelet -p
-# mkdir /data/kubernetes/logs/kubelet -p
+# mkdir /data/logs/kubernetes/kubelet -p
 # systemctl daemon-reload
 # systemctl enable kubelet && systemctl start kubelet && systemctl status kubelet
 ```
 
 ## 内核模块加载
 ``` bash
-# yum -y install conntrack-tools ipvsadm
+# yum -y install conntrack-tools ipvsadm ipset
 # cat > /etc/sysconfig/modules/ipvs.modules <<EOF
 #!/bin/bash
 ipvs_modules="ip_vs ip_vs_lc ip_vs_wlc ip_vs_rr ip_vs_wrr ip_vs_lblc ip_vs_lblcr ip_vs_dh ip_vs_sh ip_vs_fo ip_vs_nq ip_vs_sed ip_vs_ftp nf_conntrack_ipv4"
@@ -245,24 +249,23 @@ libcrc32c              16384  2 xfs,ip_vs
 
 ``` bash
 # vim /etc/kubernetes/kube-proxy
-###
-# kubernetes proxy config
+####
+## kubernetes proxy config
+####
 #
-# The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
+## The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
 KUBE_PROXY_ADDRESS="--bind-address=172.16.30.0.101"
 #
 ## You may leave this blank to use the actual hostname
 KUBE_PROXY_HOSTNAME="--hostname-override=k8s-node1"
-
-# default config should be adequate
-
-# Add your own!
+#
+## Add your own!
 KUBE_PROXY_ARGS="--proxy-mode=ipvs \
                  --ipvs-scheduler=rr \
                  --ipvs-sync-period=5s \
                  --ipvs-min-sync-period=5s \
-                 --cluster-cidr=172.20.0.0/16 \
-                 --log-dir=/data/kubernetes/logs/kube-proxy \
+                 --cluster-cidr=10.240.0.0/16 \
+                 --log-dir=/data/logs/kubernetes/kube-proxy \
                  --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
 ```
 
@@ -319,7 +322,7 @@ WantedBy=multi-user.target
 创建kube-proxy日志目录
 
 ``` bash
-# mkdir /data/kubernetes/logs/kube-proxy -p
+# mkdir /data/logs/kubernetes/kube-proxy -p
 # systemctl daemon-reload
 # systemctl enable kube-proxy && systemctl start kube-proxy && systemctl status kube-proxy
 ```
@@ -332,7 +335,7 @@ WantedBy=multi-user.target
 ``` bash
 # kubectl get node -o wide
 NAME        STATUS    ROLES     AGE       VERSION   EXTERNAL-IP   OS-IMAGE                KERNEL-VERSION                CONTAINER-RUNTIME
-k8s-node1   Ready     <none>    2d        v1.12.3    <none>        CentOS Linux 7 (Core)   4.4.166-1.el7.elrepo.x86_64   docker://17.9.1
-k8s-node2   Ready     <none>    2d        v1.12.3    <none>        CentOS Linux 7 (Core)   4.4.166-1.el7.elrepo.x86_64   docker://17.9.1
-k8s-node3   Ready     <none>    2d        v1.12.3    <none>        CentOS Linux 7 (Core)   4.4.166-1.el7.elrepo.x86_64   docker://17.9.1
+k8s-node1   Ready     <none>    2d        v1.13.4    <none>        CentOS Linux 7 (Core)   4.4.166-1.el7.elrepo.x86_64   docker://17.9.1
+k8s-node2   Ready     <none>    2d        v1.13.4    <none>        CentOS Linux 7 (Core)   4.4.166-1.el7.elrepo.x86_64   docker://17.9.1
+k8s-node3   Ready     <none>    2d        v1.13.4    <none>        CentOS Linux 7 (Core)   4.4.166-1.el7.elrepo.x86_64   docker://17.9.1
 ```
