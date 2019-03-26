@@ -17,7 +17,9 @@
 
 ## Installing Calico
 
-说明: Calico使用Deployment方式安装，需要在Kubernetes集群运行正常后，再执行部署操作
+说明: Calico使用Deployment方式部署，需要在Kubernetes集群运行正常后，再执行部署操作。
+说明: Calico网络`kubelet`配置必须增加`--network-plugin=cni`选项，否则`Pod`无法正常获取Calico分配的网段IP地址。
+
 
 ``` bash
 # mkdir -p /tmp/calico && cd /tmp/calico
