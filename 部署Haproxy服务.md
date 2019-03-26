@@ -10,11 +10,11 @@
 
 `kubernetes`的`Master`节点为三台主机，当前示例的haproxy监听的端口是`8443`，与`kube-apiserver`的端口`6443`不同，避免冲突。
 
-`kubernetes`组件相关组件`kubeclt`、`controller-manager`、`scheduler`、`kube-proxy`等均都通过`VIP`和`haproxy`监听的`8443`端口访问`kube-apiserver`服务。
+`kubernetes`组件相关组件`kube-controller-manager`、`kube-scheduler`、`kubelet`、`kube-proxy`等均都通过`VIP`和`haproxy`监听的`8443`端口访问`kube-apiserver`服务。
 
 ## 安装haproxy服务
 ``` bash
-# yum install keepalived -y
+# yum install haproxy -y
 ```
 
 ## 配置haproxy服务
@@ -57,7 +57,7 @@ backend  kube_backend
     server kube-master-03 172.16.0.103:6443 check inter 5000 fall 3 rise 3 weight 1
  
 listen haproxy-status
-    bind 0.0.0.0:18443
+    bind  0.0.0.0:18443
     mode  http
     stats refresh 30s
     stats uri /haproxy-status
@@ -76,7 +76,7 @@ tcp        0      0 0.0.0.0:18443           0.0.0.0:*               LISTEN      
 # yum install keepalived -y
 ```
 
-## 创建健康检查脚本
+## 配置haproxy服务健康检查脚本
 ``` bash
 # vim /etc/keepalived/haproxy_check.sh
 #!/bin/bash
@@ -93,7 +93,7 @@ fi
 ## 配置keepalived服务
 ``` bash
 # cp /etc/keepalived/keepalived.conf /etc/keepalived/keepalived.conf.bak_$(date '+%Y%m%d') 
-# cat /etc/keepalived/keepalived.conf
+# vim /etc/keepalived/keepalived.conf
 ! Configuration File for keepalived
  
 global_defs {
