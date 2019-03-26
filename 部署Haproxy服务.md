@@ -2,12 +2,9 @@
 
 ## Keepalived高可用方案
 
-说明: keepalived软件主要是通过VRRP协议实现高可用功能的，因此还可以作为其他服务的高可用解决方案；下面的两种方案并非非完美解决方案，仅供参考学习。
+说明: keepalived软件主要是通过VRRP协议实现高可用功能的，因此还可以作为其他服务的高可用解决方案；下面的解决方案并非完美解决方案，仅供参考学习。
 
 + `keepalived`在运行过程中周期检查本机的haproxy进程状态，如果检测到haproxy进程异常，则触发重新选主的过程，VIP将飘移到新选出来的主节点，从而实现VIP的高可用。
-
-+ `keepalived`在运行过程中周期检查keepalived进程心跳，如果检测到keepalived进程异常，则触发重新选主的过程，VIP将飘移到新选出来的主节点，从而实现VIP的高可用。
-
 
 ## Kubernetes高可用方案
 
@@ -79,6 +76,20 @@ tcp        0      0 0.0.0.0:18443           0.0.0.0:*               LISTEN      
 # yum install keepalived -y
 ```
 
+## 创建健康检查脚本
+``` bash
+# vim /etc/keepalived/haproxy_check.sh
+#!/bin/bash
+
+flag=$(systemctl status haproxy &> /dev/null;echo $?)
+
+if [[ $flag != 0 ]];then
+    echo "haproxy is down,close the keepalived"
+    systemctl stop keepalived
+fi
+# chmod +x /etc/keepalived/haproxy_check.sh
+```
+
 ## 配置keepalived服务
 ``` bash
 # cp /etc/keepalived/keepalived.conf /etc/keepalived/keepalived.conf.bak_$(date '+%Y%m%d') 
@@ -95,13 +106,18 @@ global_defs {
    smtp_connect_timeout 30
    router_id LVS_DEVEL
 }
- 
+
+vrrp_script haproxy_check {
+    script "/etc/keepalived/haproxy_check.sh"
+    interval 5
+}
+
 vrrp_instance VI_1 {
     state MASTER            // 在备节点设置为BACKUP     
     interface eth0
     virtual_router_id 51
-    priority 200            // 备节点的阀值小于主节点 
-    advert_int 1
+    priority 200            // 备节点的阀值小于主节点
+    nopreempt               // MASTER节点故障恢复后不重新抢回VIP
     authentication {
         auth_type PASS
         auth_pass 1111
@@ -109,37 +125,12 @@ vrrp_instance VI_1 {
     virtual_ipaddress {
         172.16.0.253        // MASTER VIP 
     }
-}
- 
-virtual_server 172.16.0.253 8443 {
-    delay_loop 6
-    lb_algo rr
-    lb_kind DR
-    nat_mask 255.255.255.0
-    persistence_timeout 50
-    protocol TCP
- 
-    real_server 172.16.0.104 8443 {
-        weight 100
-        TCP_CHECK {
-            connect_timeout 5
-            nb_get_retry 5
-            delay_before_retry 2
-            connect_port 8443
-        }
-    }
- 
-    real_server 172.16.0.105 8443 {
-        weight 100
-        TCP_CHECK {
-            connect_timeout 5
-            nb_get_retry 5
-            delay_before_retry 2
-            connect_port 8443
-        }
+    
+    track_script {
+        haproxy_check       // 检查脚本
     }
 }
-
+ 
 # systemctl enable keepalived 
 # systemctl restart keepalived
 # systemctl status keepalived
