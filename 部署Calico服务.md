@@ -68,6 +68,9 @@ metadata:
 spec:
   datastoreType: "etcdv3"
   etcdEndpoints: "http://172.16.0.101:2379,http://172.16.0.102:2379,http://172.16.0.103:2379"
+  etcdKeyFile: "/etc/etcd/ssl/etcd-key.pem"
+  etcdCertFile: "/etc/etcd/ssl/etcd.pem"
+  etcdCACertFile: "/etc/etcd/ssl/ca.pem"
 ```
 
 ### 验证
