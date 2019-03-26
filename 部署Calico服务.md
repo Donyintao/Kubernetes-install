@@ -58,8 +58,8 @@
 ### Installing calicoctl
 
 ``` bash
-# curl -O -L  https://github.com/projectcalico/calicoctl/releases/download/v3.4.0/calicoctl
-# chmod +x calicoctl
+# curl -L -o /usr/local/bin/calicoctl https://github.com/projectcalico/calicoctl/releases/download/v3.6.0/calicoctl
+# chmod +x /usr/local/bin/calicoctl
 # mkdir -p /etc/calico 
 # vim /etc/calico/calicoctl.cfg
 apiVersion: projectcalico.org/v3
@@ -67,7 +67,7 @@ kind: CalicoAPIConfig
 metadata:
 spec:
   datastoreType: "etcdv3"
-  etcdEndpoints: "http://172.16.0.101:2379,http://172.16.0.102:2379,http://172.16.0.103:2379"
+  etcdEndpoints: "https://172.16.0.101:2379,https://172.16.0.102:2379,https://172.16.0.103:2379"
   etcdKeyFile: "/etc/etcd/ssl/etcd-key.pem"
   etcdCertFile: "/etc/etcd/ssl/etcd.pem"
   etcdCACertFile: "/etc/etcd/ssl/ca.pem"
