@@ -14,7 +14,7 @@ CoreDNS可以通过UDP/TCP(旧式的DNS)，TLS(RFC 7858)和gRPC(不是标准)监
 
 ``` bash
 # mkdir -p coredns && cd coredns
-# wget wget https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/addons/dns/coredns/coredns.yaml.base
+# wget https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/addons/dns/coredns/coredns.yaml.base
 # cp coredns.yaml.base coredns.yaml
 ```
 
@@ -27,7 +27,7 @@ CoreDNS可以通过UDP/TCP(旧式的DNS)，TLS(RFC 7858)和gRPC(不是标准)监
 ``` bash
 # diff coredns.yaml coredns.yaml.base
 67c67
-<         kubernetes testing.com. in-addr.arpa ip6.arpa {
+<         kubernetes linux-testing.com. in-addr.arpa ip6.arpa {
 ---
 >         kubernetes __PILLAR__DNS__DOMAIN__ in-addr.arpa ip6.arpa {
 115c115
@@ -43,12 +43,6 @@ CoreDNS可以通过UDP/TCP(旧式的DNS)，TLS(RFC 7858)和gRPC(不是标准)监
 
 ``` bash
 # kubectl apply -f coredns.yaml 
-serviceaccount "coredns" created
-clusterrole "system:coredns" created
-clusterrolebinding "system:coredns" created
-configmap "coredns" created
-deployment "coredns" created
-service "kube-dns" created
 # kubectl get pod -n kube-system
 NAME                       READY     STATUS    RESTARTS   AGE
 coredns-5984fb8cbb-4ss5v   1/1       Running   0          19s
