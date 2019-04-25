@@ -141,22 +141,22 @@ cluster is healthy //表示安装成功
 # etcdctl --endpoints=https://127.0.0.1:2379 \
           --ca-file=/etc/etcd/ssl/ca.pem \
           --cert-file=/etc/etcd/ssl/etcd.pem \
-          --key-file=/etc/etcd/ssl/etcd-key.pem member add etcd_node4 https://172.16.30.104:2380
+          --key-file=/etc/etcd/ssl/etcd-key.pem member add etcd_node4 https://172.16.0.104:2380
 Added member named etcd_etcd4 with ID 5282b16e923af92f to cluster
  
 ETCD_NAME="etcd_node4"
-ETCD_INITIAL_CLUSTER="etcd_node4=https://172.16.30.104:2380,etcd_node1=https://172.16.0.101:2380,etcd_node2=https://172.16.0.102:2380,etcd_node3=https://172.16.0.103:2380"
+ETCD_INITIAL_CLUSTER="etcd_node4=https://172.16.0.104:2380,etcd_node1=https://172.16.0.101:2380,etcd_node2=https://172.16.0.102:2380,etcd_node3=https://172.16.0.103:2380"
 ETCD_INITIAL_CLUSTER_STATE="existing"
 ```
 
-查看成员列表. etcd_node4节点状态为: unstarted 
+查看成员列表. 此时etcd_node4节点状态为: unstarted 
 
 ``` bash
 # etcdctl --endpoints=https://127.0.0.1:2379 \
           --ca-file=/etc/etcd/ssl/ca.pem \
           --cert-file=/etc/etcd/ssl/etcd.pem \
           --key-file=/etc/etcd/ssl/etcd-key.pem member list
-5282b16e923af92f[unstarted]: peerURLs=https://172.16.30.104:2380
+5282b16e923af92f[unstarted]: peerURLs=https://172.16.0.104:2380
 7e218077496bccf9: name=etcd_node1 peerURLs=https://172.16.0.101:2380 clientURLs=https://172.16.0.101:2379 isLeader=true
 92f1b7c038a4300a: name=etcd_node2 peerURLs=https://172.16.0.102:2380 clientURLs=https://172.16.0.102:2379 isLeader=false
 c8611e11b142e510: name=etcd_node3 peerURLs=https://172.16.0.103:2380 clientURLs=https://172.16.0.103:2379 isLeader=false
@@ -168,13 +168,13 @@ c8611e11b142e510: name=etcd_node3 peerURLs=https://172.16.0.103:2380 clientURLs=
 # vim /etc/etcd/etcd.conf
 ETCD_NAME="etcd_node4" // 节点名称,对应etcd添加节点命令时输出的信息
 ETCD_DATA_DIR="/var/lib/etcd/etcd_node4.etcd"
-ETCD_LISTEN_PEER_URLS="https://172.16.30.104:2380"
-ETCD_LISTEN_CLIENT_URLS="https://172.16.30.104:2379,https://127.0.0.1:2379"
-ETCD_INITIAL_ADVERTISE_PEER_URLS="https://172.16.30.104:2380"
-ETCD_INITIAL_CLUSTER="etcd_node4=https://172.16.30.104:2380,etcd_node1=https://172.16.0.101:2380,etcd_node2=https://172.16.0.101:2380,etcd_node3=https://172.16.0.103:2380" // 集群列表,对应etcd添加节点命令时输出的信息
+ETCD_LISTEN_PEER_URLS="https://172.16.0.104:2380"
+ETCD_LISTEN_CLIENT_URLS="https://172.16.0.104:2379,https://127.0.0.1:2379"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="https://172.16.0.104:2380"
+ETCD_INITIAL_CLUSTER="etcd_node4=https://172.16.0.104:2380,etcd_node1=https://172.16.0.101:2380,etcd_node2=https://172.16.0.101:2380,etcd_node3=https://172.16.0.103:2380" // 集群列表,对应etcd添加节点命令时输出的信息
 ETCD_INITIAL_CLUSTER_STATE="existing" // 集群状态,对应etcd添加节点命令时输出的信息
 ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
-ETCD_ADVERTISE_CLIENT_URLS="https://172.16.30.104:2379"
+ETCD_ADVERTISE_CLIENT_URLS="https://172.16.0.104:2379"
 ETCD_CERT_FILE="/etc/etcd/ssl/etcd.pem"
 ETCD_KEY_FILE="/etc/etcd/ssl/etcd-key.pem"
 ETCD_CLIENT_CERT_AUTH="true"
@@ -189,14 +189,14 @@ ETCD_PEER_AUTO_TLS="true"
 # systemctl start etcd.service && systemctl status etcd.service
 ```
 
-再次查看成员列表. etcd_etcd4节点状态已经显示正常
+再次查看成员列表. 此时etcd_etcd4节点状态已经显示正常
 
 ``` bash
 # etcdctl --endpoints=https://127.0.0.1:2379 \
           --ca-file=/etc/etcd/ssl/ca.pem \
           --cert-file=/etc/etcd/ssl/etcd.pem \
           --key-file=/etc/etcd/ssl/etcd-key.pem member list
-5282b16e923af92f: name=etcd_node4 peerURLs=https://172.16.30.104:2380 clientURLs=https://172.16.30.104:2379 isLeader=false
+5282b16e923af92f: name=etcd_node4 peerURLs=https://172.16.0.104:2380 clientURLs=https://172.16.0.104:2379 isLeader=false
 7e218077496bccf9: name=etcd_node1 peerURLs=https://172.16.0.101:2380 clientURLs=https://172.16.0.101:2379 isLeader=true
 92f1b7c038a4300a: name=etcd_node2 peerURLs=https://172.16.0.102:2380 clientURLs=https://172.16.0.102:2379 isLeader=false
 c8611e11b142e510: name=etcd_node3 peerURLs=https://172.16.0.103:2380 clientURLs=https://172.16.0.103:2379 isLeader=false
