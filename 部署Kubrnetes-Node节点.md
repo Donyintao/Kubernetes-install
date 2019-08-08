@@ -264,9 +264,8 @@ KUBE_PROXY_ARGS="--proxy-mode=ipvs \
                  --ipvs-scheduler=rr \
                  --ipvs-sync-period=5s \
                  --ipvs-min-sync-period=5s \
-                 --cluster-cidr=10.240.0.0/16 \
-                 --log-dir=/data/logs/kubernetes/kube-proxy \
-                 --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
+                 --config=/etc/kubernetes/kube-proxy.config \
+                 --log-dir=/data/logs/kubernetes/kube-proxy"
 ```
 
 创建kube-proxy config文件
