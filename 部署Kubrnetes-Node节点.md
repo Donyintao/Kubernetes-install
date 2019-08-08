@@ -253,9 +253,6 @@ libcrc32c              16384  2 xfs,ip_vs
 ## kubernetes proxy config
 ####
 #
-## The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
-KUBE_PROXY_ADDRESS="--bind-address=172.16.30.0.101"
-#
 ## You may leave this blank to use the actual hostname
 KUBE_PROXY_HOSTNAME="--hostname-override=k8s-node1"
 #
