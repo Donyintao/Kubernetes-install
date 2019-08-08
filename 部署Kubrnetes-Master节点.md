@@ -17,7 +17,7 @@ Controller Manager是Kubernetes最重要的核心组件之一，主要提供以�
 ## 升级master和node节点内核版本
 ``` bash
 # rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
-# rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
+# rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-4.el7.elrepo.noarch.rpm
 # yum -y install --enablerepo=elrepo-kernel kernel-lt-devel kernel-lt  
 # grub2-set-default 0
 # grub2-mkconfig -o /boot/grub2/grub.cfg
@@ -36,8 +36,8 @@ Controller Manager是Kubernetes最重要的核心组件之一，主要提供以�
 拷贝二进制文件
 
 ``` bash
-# mkdir -p /usr/local/kubernetes-v1.13.4/bin
-# ln -s /usr/local/kubernetes-v1.13.4 /usr/local/kubernetes
+# mkdir -p /usr/local/kubernetes-v1.15.2/bin
+# ln -s /usr/local/kubernetes-v1.15.2 /usr/local/kubernetes
 # cp -r `pwd`/kubernetes/server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kube-proxy,kubelet} /usr/local/kubernetes/bin
 ```
 
@@ -95,7 +95,7 @@ KUBE_ETCD_SERVERS="--etcd-servers=https://172.16.0.101:2379,https://172.16.0.102
 KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.241.0.0/16"
 #
 ## default admission control policies
-KUBE_ADMISSION_CONTROL="--enable-admission-plugins=Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota"
+KUBE_ADMISSION_CONTROL="--enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota"
 #
 ## Add your own!
 KUBE_API_ARGS="--event-ttl=1h \
