@@ -41,15 +41,15 @@ kube-proxy可以直接运行在物理机上，也可以以static pod或者daemon
 ## 下载kubernetes组件的二进制文件
 
 ``` bash
-# wget https://storage.googleapis.com/kubernetes-release/release/v1.13.4/kubernetes-server-linux-amd64.tar.gz
+# wget https://storage.googleapis.com/kubernetes-release/release/v1.15.2/kubernetes-server-linux-amd64.tar.gz
 # tar fx kubernetes-server-linux-amd64.tar.gz
 ```
 
 拷贝二进制文件
 
 ``` bash
-# mkdir -p /usr/local/kubernetes-v1.13.4/bin
-# ln -s /usr/local/kubernetes-v1.13.4 /usr/local/kubernetes
+# mkdir -p /usr/local/kubernetes-v1.15.2/bin
+# ln -s /usr/local/kubernetes-v1.15.2 /usr/local/kubernetes
 # cp -r `pwd`/kubernetes/server/bin/{kube-proxy,kubelet} /usr/local/kubernetes/bin
 ```
 
@@ -267,6 +267,43 @@ KUBE_PROXY_ARGS="--proxy-mode=ipvs \
                  --cluster-cidr=10.240.0.0/16 \
                  --log-dir=/data/logs/kubernetes/kube-proxy \
                  --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
+```
+
+创建kube-proxy config文件
+
+说明：1.12.x版本后，kube-proxy服务建议使用config方式配置
+
+``` bash
+# vim /etc/kubernetes/kube-proxy.config 
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+bindAddress: 172.16.0.101
+clientConnection:
+  acceptContentTypes: ""
+  burst: 10
+  contentType: application/vnd.kubernetes.protobuf
+  kubeconfig: /etc/kubernetes/kube-proxy.kubeconfig
+  qps: 5
+clusterCIDR: 10.240.0.0/16
+configSyncPeriod: 15m0s
+conntrack:
+  maxPerCore: 32768
+  min: 131072
+  tcpCloseWaitTimeout: 1h0m0s
+  tcpEstablishedTimeout: 24h0m0s
+enableProfiling: false
+healthzBindAddress: 0.0.0.0:10256
+kind: KubeProxyConfiguration
+metricsBindAddress: 127.0.0.1:10249
+mode: ""
+nodePortAddresses: null
+oomScoreAdj: -999
+portRange: ""
+resourceContainer: /kube-proxy
+udpIdleTimeout: 250ms
+winkernel:
+  enableDSR: false
+  networkName: ""
+  sourceVip: ""
 ```
 
 创建kube-proxy TLS认证配置文件
