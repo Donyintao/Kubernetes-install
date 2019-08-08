@@ -91,7 +91,7 @@ FLANNEL_OPTIONS="-etcd-cafile=/etc/flannel/ssl/ca.pem -etcd-certfile=/etc/flanne
 # vim /etc/docker/daemon.json
 {
     "registry-mirrors": ["http://d7eabb7d.m.daocloud.io"],
-    "storage-driver": "overlay2",
+    "exec-opts": ["native.cgroupdriver=systemd"],
     "graph": "/data/docker"
 }
 
