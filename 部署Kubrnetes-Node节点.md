@@ -257,11 +257,7 @@ libcrc32c              16384  2 xfs,ip_vs
 KUBE_PROXY_HOSTNAME="--hostname-override=k8s-node1"
 #
 ## Add your own!
-KUBE_PROXY_ARGS="--proxy-mode=ipvs \
-                 --ipvs-scheduler=rr \
-                 --ipvs-sync-period=5s \
-                 --ipvs-min-sync-period=5s \
-                 --config=/etc/kubernetes/kube-proxy.config \
+KUBE_PROXY_ARGS="--config=/etc/kubernetes/kube-proxy.config \
                  --log-dir=/data/logs/kubernetes/kube-proxy"
 ```
 
@@ -288,18 +284,20 @@ conntrack:
   tcpEstablishedTimeout: 24h0m0s
 enableProfiling: false
 healthzBindAddress: 0.0.0.0:10256
+ipvs:
+  scheduler: "rr"
+  syncPeriod: 15s
+  minSyncPeriod: 5s
+
 kind: KubeProxyConfiguration
 metricsBindAddress: 127.0.0.1:10249
-mode: ""
+mode: "ipvs"
 nodePortAddresses: null
 oomScoreAdj: -999
 portRange: ""
 resourceContainer: /kube-proxy
 udpIdleTimeout: 250ms
-winkernel:
-  enableDSR: false
-  networkName: ""
-  sourceVip: ""
+"
 ```
 
 创建kube-proxy TLS认证配置文件
