@@ -9,33 +9,33 @@
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority: /etc/kubernetes/ssl/ca.pem	# dev集群CA证书
-    server: https://10.8.0.136:6443						# dev集群APIServer地址	
-  name: kubernetes-cluser-dev 							# dev集群名称(自定义)
-- cluster:
-    certificate-authority: /etc/kubernetes/ssl/ca.pem	# pro集群CA证书	
-    server: https://10.8.1.136:6443 					# pro集群CA证书
-  name: kubernetes-cluser-pro							# pro集群名称(自定义)
+    certificate-authority: /etc/kubernetes/ssl/ca.pem   # dev集群CA证书
+    server: https://10.8.0.136:6443                     # dev集群APIServer地址	
+  name: kubernetes-cluser-dev                           # dev集群名称(自定义)
+- cluster:            
+    certificate-authority: /etc/kubernetes/ssl/ca.pem   # pro集群CA证书	
+    server: https://10.8.1.136:6443                     # pro集群CA证书
+  name: kubernetes-cluser-pro                           # pro集群名称(自定义)
 contexts:
-- context:												# 定义集群上下文
+- context:                                              # 定义集群上下文
     cluster: kubernetes-cluser-dev
     user: cluser-dev-admin
-  name: kubernetes-cluser-dev							# dev集群context名称(自定义)
+  name: kubernetes-cluser-dev                           # dev集群context名称(自定义)
 - context:
     cluster: kubernetes-cluser-pro				
     user: cluser-pro-admin						
-  name: kubernetes-cluser-pro							# pro集群context名称(自定义)	
-current-context: kubernetes-cluser-dev					# 定义默认集群
+  name: kubernetes-cluser-pro                           # pro集群context名称(自定义)	
+current-context: kubernetes-cluser-dev                  # 定义默认集群
 kind: Config
 preferences: {}
 users:
-- name: cluser-dev-admin				# dev集群用户名称(自定义)
+- name: cluser-dev-admin                                # dev集群用户名称(自定义)
   user:
-    client-certificate: /etc/kubernetes/ssl/kubelet.pem	# dev集群客户证书
+    client-certificate: /etc/kubernetes/ssl/kubelet.pem # dev集群客户证书
     client-key: /etc/kubernetes/ssl/kubelet-key.pem		
-- name: cluser-pro-admin								# pro集群用户名称(自定义)
+- name: cluser-pro-admin                                # pro集群用户名称(自定义)
   user:
-    client-certificate: /etc/kubernetes/ssl/kubelet.pem	# pro集群客户证书
+    client-certificate: /etc/kubernetes/ssl/kubelet.pem # pro集群客户证书
     client-key: /etc/kubernetes/ssl/kubelet-key.pem
 ```
 
