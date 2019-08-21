@@ -1,6 +1,6 @@
 # Kubernetes-install
 
-本篇文章主要介绍kubernetes v1.13.x版本(启用TLS bootstrap认证方式)的安装步骤和注意事项；而不是使用kubeadm等自动化方式来部署集群。
+本篇文章主要介绍kubernetes v1.15.x版本(启用TLS bootstrap认证方式)的安装步骤和注意事项；而不是使用kubeadm等自动化方式来部署集群。
 
 安装步骤和流程，Kubernetes搭建部分参考文章：`和我一步步部署kubernetes集群`。主要修改：移除Token认证，增加了`Node TLS bootstrap`认证和使用`IPVS`实现Kubernetes入口流量负载均衡，以及`Master`高可用等；后面组件增加了`Calico`网络，`Traefik Ingress`，`Prometheus`监控报警，日志搜集等等；以及简单说明各个组件和服务的原理和作用。
 
@@ -44,6 +44,7 @@
 1. [Kubrnetes服务](https://github.com/Donyintao/Kubernetes-install)
     1. [Master install](部署Kubrnetes-Master节点.md)
     1. [Node install](部署Kubrnetes-Node节点.md)
+    1. [配置kubeconfig访问多个集群](配置kubeconfig访问多个集群.md)
 1. [Kubrnetes组件](https://github.com/Donyintao/Kubernetes-install)
    1. [CoreDNS](部署CoreDNS服务.md)
    1. [Dashboard](https://github.com/Donyintao/kubernetes-dashboard/)
